@@ -244,6 +244,106 @@ const TASKS: Task[] = [
       },
     ],
   },
+  {
+    id: "ex-recado",
+    eyebrow: "CONSTRANGIMENTO",
+    title: "Explicar para a sogra por que o Wi-Fi caiu",
+    brief:
+      "Escreva uma explicação técnica-mas-compreensível de por que a internet caiu no almoço de domingo, sem admitir que você desligou o roteador para jogar.",
+    audience: "Sogra desconfiada · Grupo da família",
+    signal: "clareza + tom",
+    tip: "Quando o público não é técnico, o prompt precisa dizer o nível de linguagem esperado.",
+    accent: "orange",
+    synergyOptions: [
+      {
+        label: "Diplomacia doméstica",
+        tags: ["empathy", "tone"],
+        bonus: 13,
+        note: "Empatia com o tom certo evita virar assunto de Natal.",
+      },
+      {
+        label: "Versão oficial",
+        tags: ["context", "structure"],
+        bonus: 12,
+        note: "Contexto organizado faz qualquer desculpa parecer laudo técnico.",
+      },
+    ],
+  },
+  {
+    id: "bio-app",
+    eyebrow: "AUTOPROMOÇÃO",
+    title: "Escrever uma bio de app de encontros",
+    brief:
+      "Crie três bios de até 140 caracteres que soem espirituosas, honestas e não mencionem 'amo viajar e comer bem'.",
+    audience: "Pessoas estranhas · Perfil público",
+    signal: "restrição + voz",
+    tip: "Proibir clichês dentro do prompt é uma restrição criativa poderosa.",
+    accent: "pink",
+    synergyOptions: [
+      {
+        label: "Charme calibrado",
+        tags: ["creative", "tone"],
+        bonus: 14,
+        note: "Criatividade com voz própria vence frase pronta.",
+      },
+      {
+        label: "Curto e afiado",
+        tags: ["constraint", "specific"],
+        bonus: 13,
+        note: "Limite de caracteres força cada palavra a trabalhar.",
+      },
+    ],
+  },
+  {
+    id: "gato-ata",
+    eyebrow: "BUROCRACIA ABSURDA",
+    title: "Redigir a ata de reunião do meu gato",
+    brief:
+      "Transforme 'o gato dormiu 14 horas e derrubou um copo' em uma ata corporativa formal com pauta, deliberações e próximos passos.",
+    audience: "Conselho felino · Documento oficial",
+    signal: "estrutura + humor",
+    tip: "Contraste de registro (assunto bobo + formato sério) é ouro para prompts criativos.",
+    accent: "purple",
+    synergyOptions: [
+      {
+        label: "Solenidade absurda",
+        tags: ["structure", "creative"],
+        bonus: 15,
+        note: "Formato rígido aplicado a conteúdo tolo gera o humor.",
+      },
+      {
+        label: "Pauta impecável",
+        tags: ["structure", "brief"],
+        bonus: 12,
+        note: "Formato explícito mantém a piada legível.",
+      },
+    ],
+  },
+  {
+    id: "audio-desculpa",
+    eyebrow: "CRIME DIGITAL",
+    title: "Justificar um áudio de 9 minutos no grupo",
+    brief:
+      "Escreva uma mensagem curta defendendo por que você mandou um áudio de 9 minutos no grupo do trabalho às 23h, e resuma o conteúdo em 3 linhas para quem não vai ouvir.",
+    audience: "Colegas irritados · Grupo do trabalho",
+    signal: "constraint + empathy",
+    tip: "Pedir o resumo junto com o texto ensina que o prompt pode exigir dois formatos na mesma resposta.",
+    accent: "green",
+    synergyOptions: [
+      {
+        label: "Pedido de perdão eficiente",
+        tags: ["empathy", "constraint"],
+        bonus: 14,
+        note: "Assumir o erro em poucas palavras vale mais que nove minutos de explicação.",
+      },
+      {
+        label: "TL;DR salvador",
+        tags: ["structure", "specific"],
+        bonus: 13,
+        note: "Um resumo estruturado recupera a atenção de quem já pulou o áudio.",
+      },
+    ],
+  },
 ];
 
 const CARDS: Card[] = [
@@ -1492,6 +1592,7 @@ export default function App() {
   const revealTimer = useRef<number | null>(null);
   const [scoldedId, setScoldedId] = useState<string | null>(null);
   const scoldTimer = useRef<number | null>(null);
+  const resultRef = useRef<HTMLElement | null>(null);
 
   const scold = (cardId: string) => {
     setScoldedId(cardId);
@@ -1594,6 +1695,17 @@ export default function App() {
       document.body.style.overflow = previousOverflow;
     };
   }, [libraryOpen]);
+
+  useEffect(() => {
+    if (phase !== "result" || !result) return;
+    const timer = window.setTimeout(() => {
+      resultRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [phase, result]);
 
   useEffect(() => {
     if (!demo || phase !== "auction" || demoRound.current === roundState.round)
@@ -1900,7 +2012,7 @@ export default function App() {
             </section>
 
             {phase === "result" && result && (
-              <section className="result-panel reveal-in">
+              <section className="result-panel reveal-in" ref={resultRef}>
                 <div className="result-heading">
                   <div>
                     <div className="eyebrow">
