@@ -2318,3 +2318,66 @@ button:focus-visible {
     padding: 6px 9px;
   }
 }
+/* ===== CARTAS ARMADILHA (VAGO) ===== */
+.market-card.is-trap-card .card-type {
+  color: #c99a6f;
+}
+.market-card.is-trap-card .card-symbol {
+  color: #e0b088;
+  border-color: rgba(224, 176, 136, 0.28);
+}
+.market-card.is-trap-card.is-selected {
+  border-color: #e0703f;
+  background: rgba(74, 28, 18, 0.5);
+}
+
+.reveal-card.is-trap {
+  background: linear-gradient(
+    90deg,
+    rgba(120, 32, 24, 0.24),
+    rgba(120, 32, 24, 0)
+  );
+  border-bottom-color: rgba(255, 96, 72, 0.22);
+}
+.reveal-card.is-trap .reveal-card-symbol {
+  color: #ffb0a0;
+  background: rgba(176, 48, 36, 0.34);
+}
+.reveal-card.is-trap .reveal-card-copy span {
+  color: #ff8f72;
+  font-weight: 600;
+}
+.reveal-card.is-trap .revealed-value strong {
+  color: #ff7a5c;
+}
+
+.trap-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 11px;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 110, 80, 0.3);
+  background: rgba(96, 28, 20, 0.22);
+  border-radius: 7px;
+  color: #e8a68e;
+  font:
+    10px/1.35 "DM Mono",
+    monospace;
+}
+.trap-warning svg {
+  color: #ff8a5c;
+  flex: none;
+}
+.trap-warning b {
+  color: #ffb79c;
+}
+
+.library-item-copy > div span.cat-armadilha,
+.library-item.is-trap-synergy .library-item-copy > div span {
+  color: #ff8f6a;
+}
+.library-item.is-trap-synergy.is-discovered {
+  background: rgba(88, 32, 24, 0.55);
+  border-color: rgba(255, 112, 80, 0.3);
+}

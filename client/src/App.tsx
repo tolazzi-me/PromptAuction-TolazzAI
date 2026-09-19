@@ -24,6 +24,7 @@ import {
   RotateCcw,
   Sparkles,
   Target,
+  TriangleAlert,
   Trophy,
   UserRound,
   Zap,
@@ -64,6 +65,7 @@ type Card = {
   tags: string[];
   symbol: string;
   liveCost?: number;
+  trap?: boolean;
 };
 
 type Personality = {
@@ -90,6 +92,7 @@ type Evaluation = {
   spent: number;
   baseQuality: number;
   focusBonus: number;
+  trapPenalty: number;
   synergyBonus: number;
   specialSynergy: { label: string; bonus: number; note: string } | null;
   discoveredLibraryIds: string[];
@@ -943,6 +946,62 @@ const CARDS: Card[] = [
     tags: ["structure", "detail", "evidence"],
     symbol: "⟿",
   },
+  {
+    id: "trap-creative",
+    label: "Seja criativo",
+    type: "VAGO",
+    description: "Pede para a IA ser criativa.",
+    cost: 4,
+    quality: 2,
+    tags: [],
+    symbol: "✧",
+    trap: true,
+  },
+  {
+    id: "trap-best",
+    label: "Faça o melhor possível",
+    type: "VAGO",
+    description:
+      "Pede para a IA fazer bem, lembrando que qualquer saída serve.",
+    cost: 5,
+    quality: 2,
+    tags: [],
+    symbol: "☆",
+    trap: true,
+  },
+  {
+    id: "trap-notlong",
+    label: "Não seja muito longo",
+    type: "VAGO",
+    description: "Proíbe a IA de fazer um texto grande.",
+    cost: 3,
+    quality: 2,
+    tags: [],
+    symbol: "≁",
+    trap: true,
+  },
+  {
+    id: "trap-understand",
+    label: "Você entendeu, né?",
+    type: "VAGO",
+    description: "Pede para IA entender o que você disse.",
+    cost: 4,
+    quality: 2,
+    tags: [],
+    symbol: "¿",
+    trap: true,
+  },
+  {
+    id: "trap-professional",
+    label: "Deixe profissional",
+    type: "VAGO",
+    description: "Adjetivo genérico pedindo para deixar profissional.",
+    cost: 3,
+    quality: 2,
+    tags: [],
+    symbol: "◇",
+    trap: true,
+  },
 ];
 
 const PERSONALITIES: Personality[] = [
@@ -1030,6 +1089,16 @@ const LIBRARY_SYNERGIES: LibrarySynergy[] = [
         "CONTEXTO",
         "FORMATO",
       ]),
+  },
+  {
+    id: "vague-trap",
+    label: "Armadilha da vagueza",
+    category: "ARMADILHA",
+    requirement: "Qualquer carta VAGO no prompt",
+    detail:
+      "Adjetivos sem critério ('criativo', 'profissional', 'o melhor possível') custam caro e não guiam nada. Cada uma delas derruba a qualidade do prompt.",
+    bonus: -5,
+    matches: cards => cards.some(card => card.trap),
   },
 
   {
@@ -1263,12 +1332,15 @@ function chooseCpu(
       : personality.title === "estrategista" || personality.title === "BOSS"
         ? 3
         : 2;
+  const chaotic = personality.title === "caótica";
   for (const card of ranking) {
+    if (card.trap && !chaotic) continue;
     const price = card.liveCost ?? card.cost;
     if (picks.length >= maxCards || spend + price > budget) continue;
     picks.push(card.id);
     spend += price;
   }
+
   return picks;
 }
 
@@ -1298,19 +1370,29 @@ function buildRound(
     CARDS.filter(card => card.tags.includes("example")),
     entropy + 41
   ).slice(0, 1);
+  const trapCards = shuffled(
+    CARDS.filter(card => card.trap),
+    entropy + 77
+  ).slice(0, round >= 3 ? 2 : 1);
+
   const guaranteedIds = new Set(
-    [...coreCards, ...exampleCards].map(card => card.id)
+    [...coreCards, ...exampleCards, ...trapCards].map(card => card.id)
   );
   const marketPool = [
     ...coreCards,
     ...exampleCards,
+    ...trapCards,
     ...freshCards.filter(card => !guaranteedIds.has(card.id)),
     ...randomizedCards.filter(card => !guaranteedIds.has(card.id)),
   ];
-  const market = marketPool.slice(0, 10).map((card, index) => ({
+
+  const market = marketPool.slice(0, 10).map(card => ({
     ...card,
-    liveCost: Math.max(1, Math.round(card.cost * (0.8 + Math.random() * 0.4))),
+    liveCost: card.trap
+      ? Math.max(3, Math.round(card.cost * (1 + Math.random() * 0.3)))
+      : Math.max(1, Math.round(card.cost * (0.8 + Math.random() * 0.4))),
   }));
+
   const cpuPlan = chooseCpu(
     market,
     task,
@@ -1347,6 +1429,9 @@ function evaluate(
     )
   );
   const focusBonus = matchedTags.length * 2;
+  const trapCount = cards.filter(card => card.trap).length;
+  const trapPenalty = trapCount * 10;
+
   const synergyActive = synergy.tags.every(tag =>
     cards.some(card => card.tags.includes(tag))
   );
@@ -1421,12 +1506,16 @@ function evaluate(
   const discoveredLibraryIds = LIBRARY_SYNERGIES.filter(entry =>
     entry.matches(cards, task, synergyActive)
   ).map(entry => entry.id);
-  const quality = baseQuality + focusBonus + synergyBonus + specialBonus;
+  const quality = Math.max(
+    0,
+    baseQuality + focusBonus + synergyBonus + specialBonus - trapPenalty
+  );
   return {
     cards,
     spent,
     baseQuality,
     focusBonus,
+    trapPenalty, // ← nova
     synergyBonus,
     specialSynergy,
     discoveredLibraryIds,
@@ -1519,11 +1608,11 @@ function MarketCard({
 
 function RevealCard({ card }: { card: Card }) {
   return (
-    <div className="reveal-card">
+    <div className={`reveal-card ${card.trap ? "is-trap" : ""}`}>
       <div className="reveal-card-symbol">{card.symbol}</div>
       <div className="reveal-card-copy">
         <strong>{card.label}</strong>
-        <span>{card.type}</span>
+        <span>{card.trap ? "armadilha · −10" : card.type}</span>
       </div>
       <div className="revealed-value">
         <span>valor</span>
@@ -1741,7 +1830,9 @@ export default function App() {
     }
     setSelectedIds(current => [...current, card.id]);
     setNotice(
-      `${card.label} entrou no seu prompt. Ainda restam ${wallet - price} moedas.`
+      card.trap
+        ? `${card.label} entrou no prompt — mas adjetivos sem critério não dizem nada à IA. Restam ${wallet - price} moedas.`
+        : `${card.label} entrou no seu prompt. Ainda restam ${wallet - price} moedas.`
     );
   };
 
@@ -2106,6 +2197,19 @@ export default function App() {
                     </div>
                   </div>
                 </div>
+
+                {result.player.trapPenalty > 0 && (
+                  <div className="trap-warning">
+                    <TriangleAlert size={15} />
+                    <span>
+                      <b>−{result.player.trapPenalty} de qualidade:</b> você
+                      comprou {result.player.cards.filter(c => c.trap).length}{" "}
+                      carta(s) vaga(s). Adjetivos como "criativo" ou
+                      "profissional" custam moedas e não dizem à IA <b>o que</b>{" "}
+                      fazer. Troque por um critério verificável.
+                    </span>
+                  </div>
+                )}
 
                 <div className="synergy-reveal">
                   <div className="synergy-icon">
