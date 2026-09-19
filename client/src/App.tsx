@@ -1693,6 +1693,10 @@ export default function App() {
           ? "resultado"
           : "partida encerrada";
 
+  const CpuIcon = roundState.personality.icon;
+  const aresWins =
+    result?.winner === "cpu" && roundState.personality.name === "Ares";
+
   return (
     <div className="game-shell">
       <div className="ambient ambient-one" />
@@ -1916,17 +1920,18 @@ export default function App() {
                   </div>
                 </div>
                 <div className="reveal-grid">
+                  {/* ---------- LADO DO JOGADOR ---------- */}
                   <div
-                    className={`reveal-side player-side ${result.winner === "player" ? "winner-side" : ""}`}
+                    className={`reveal-side ${result.winner === "player" ? "winner-side" : ""}`}
                   >
                     <div className="reveal-side-head">
                       <span>
-                        <UserRound size={14} /> seu prompt
+                        <UserRound size={13} /> seu prompt
                       </span>
-                      <b>
-                        {formatScore(result.player.efficiency)}{" "}
+                      <span>
+                        <b>{formatScore(result.player.efficiency)}</b>
                         <small>efic.</small>
-                      </b>
+                      </span>
                     </div>
                     {result.player.cards.length ? (
                       result.player.cards.map(card => (
@@ -1934,7 +1939,7 @@ export default function App() {
                       ))
                     ) : (
                       <div className="empty-reveal">
-                        Você parou sem comprar cartas.
+                        Nenhuma carta comprada nesta rodada.
                       </div>
                     )}
                     <div className="reveal-math">
@@ -1946,27 +1951,39 @@ export default function App() {
                       </span>
                     </div>
                   </div>
+
+                  {/* ---------- LADO DA CPU / ARES ---------- */}
                   <div
-                    className={`reveal-side cpu-side ${result.winner === "cpu" ? "winner-side" : ""}`}
+                    className={`reveal-side ${result.winner === "cpu" ? "winner-side" : ""} ${
+                      aresWins ? "ares-rage" : ""
+                    }`}
                   >
+                    {aresWins && (
+                      <div className="ares-taunt">
+                        <Flame size={13} />
+                        <span>Haha, desista</span>
+                      </div>
+                    )}
                     <div className="reveal-side-head">
                       <span>
-                        {roundState.personality.title === "BOSS" ? (
-                          <Flame size={14} color="#ff5252" />
-                        ) : (
-                          <Bot size={14} />
-                        )}{" "}
+                        <roundState.personality.icon size={13} />{" "}
                         {roundState.personality.name} ·{" "}
                         {roundState.personality.title}
                       </span>
-                      <b>
-                        {formatScore(result.cpu.efficiency)}{" "}
+                      <span>
+                        <b>{formatScore(result.cpu.efficiency)}</b>
                         <small>efic.</small>
-                      </b>
+                      </span>
                     </div>
-                    {result.cpu.cards.map(card => (
-                      <RevealCard key={card.id} card={card} />
-                    ))}
+                    {result.cpu.cards.length ? (
+                      result.cpu.cards.map(card => (
+                        <RevealCard key={card.id} card={card} />
+                      ))
+                    ) : (
+                      <div className="empty-reveal">
+                        A CPU não comprou nada.
+                      </div>
+                    )}
                     <div className="reveal-math">
                       <span>
                         qualidade <b>{result.cpu.quality}</b>
@@ -1977,6 +1994,7 @@ export default function App() {
                     </div>
                   </div>
                 </div>
+
                 <div className="synergy-reveal">
                   <div className="synergy-icon">
                     <Zap size={15} />
