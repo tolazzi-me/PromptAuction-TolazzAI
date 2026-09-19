@@ -416,7 +416,7 @@ const CARDS: Card[] = [
     description: "Troca abstração por uma cena ou frase real.",
     cost: 4,
     quality: 10,
-    tags: ["specific", "evidence"],
+    tags: ["specific", "evidence", "example"],
     symbol: "▣",
   },
   {
@@ -1368,22 +1368,30 @@ function MarketCard({
   card,
   selected,
   disabled,
+  scolded,
   onBuy,
   index,
 }: {
   card: Card;
   selected: boolean;
   disabled: boolean;
+  scolded: boolean;
   onBuy: () => void;
   index: number;
 }) {
   return (
     <button
-      className={`market-card ${selected ? "is-selected" : ""}`}
-      disabled={disabled || selected}
+      className={`market-card ${selected ? "is-selected" : ""} ${scolded ? "is-scolded" : ""}`}
+      disabled={disabled}
       onClick={onBuy}
       style={{ "--delay": `${index * 45}ms` } as CSSProperties}
     >
+      {scolded && (
+        <span className="card-scold" role="status">
+          <Gavel size={13} /> Isso é um leilão, não pode vender depois de
+          comprar
+        </span>
+      )}
       <div className="market-card-top">
         <span className="card-symbol">{card.symbol}</span>
         <span className="card-type">{card.type}</span>
@@ -1482,6 +1490,14 @@ export default function App() {
     }
   );
   const revealTimer = useRef<number | null>(null);
+  const [scoldedId, setScoldedId] = useState<string | null>(null);
+  const scoldTimer = useRef<number | null>(null);
+
+  const scold = (cardId: string) => {
+    setScoldedId(cardId);
+    if (scoldTimer.current) window.clearTimeout(scoldTimer.current);
+    scoldTimer.current = window.setTimeout(() => setScoldedId(null), 2200);
+  };
 
   const selectedCards = useMemo(
     () => roundState.market.filter(card => selectedIds.includes(card.id)),
@@ -1565,6 +1581,7 @@ export default function App() {
   useEffect(
     () => () => {
       if (revealTimer.current) window.clearTimeout(revealTimer.current);
+      if (scoldTimer.current) window.clearTimeout(scoldTimer.current);
     },
     []
   );
@@ -1599,8 +1616,11 @@ export default function App() {
 
   const buyCard = (card: Card) => {
     if (phase !== "auction") return;
+    if (selectedIds.includes(card.id)) {
+      scold(card.id);
+      return;
+    }
     const price = card.liveCost ?? card.cost;
-    if (selectedIds.includes(card.id)) return;
     if (price > wallet) {
       setNotice(
         "Essa carta passa do seu saldo. Eficiência também é saber parar."
@@ -1843,12 +1863,18 @@ export default function App() {
                     key={card.id}
                     card={card}
                     selected={selectedIds.includes(card.id)}
-                    disabled={phase !== "auction" || card.liveCost! > wallet}
+                    scolded={scoldedId === card.id}
+                    disabled={
+                      phase !== "auction" ||
+                      (!selectedIds.includes(card.id) &&
+                        card.liveCost! > wallet)
+                    }
                     onBuy={() => buyCard(card)}
                     index={index}
                   />
                 ))}
               </div>
+
               <div className="market-footer">
                 <div className="selected-summary">
                   <span className="selected-count">{selectedCards.length}</span>
@@ -1966,23 +1992,27 @@ export default function App() {
                         ? "Ela estava ativa nesta mesa."
                         : "Ninguém montou a combinação completa."}
                     </p>
-                    {(result.player.specialSynergy ||
-                      result.cpu.specialSynergy) && (
-                      <div className="special-synergy">
-                        <strong>
-                          {result.player.specialSynergy?.label ||
-                            result.cpu.specialSynergy?.label}
-                        </strong>
-                        <span>
-                          {result.player.specialSynergy?.note ||
-                            result.cpu.specialSynergy?.note}
+                    {result.player.specialSynergy && (
+                      <div className="special-synergy is-player">
+                        <span className="synergy-owner">você</span>
+                        <div className="synergy-body">
+                          <strong>{result.player.specialSynergy.label}</strong>
+                          <span>{result.player.specialSynergy.note}</span>
+                        </div>
+                        <b>+{result.player.specialSynergy.bonus} qualidade</b>
+                      </div>
+                    )}
+
+                    {result.cpu.specialSynergy && (
+                      <div className="special-synergy is-cpu">
+                        <span className="synergy-owner">
+                          {roundState.personality.name}
                         </span>
-                        <b>
-                          +
-                          {result.player.specialSynergy?.bonus ||
-                            result.cpu.specialSynergy?.bonus}{" "}
-                          qualidade
-                        </b>
+                        <div className="synergy-body">
+                          <strong>{result.cpu.specialSynergy.label}</strong>
+                          <span>{result.cpu.specialSynergy.note}</span>
+                        </div>
+                        <b>+{result.cpu.specialSynergy.bonus} qualidade</b>
                       </div>
                     )}
                   </div>
