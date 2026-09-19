@@ -19,6 +19,7 @@ import {
   Gavel,
   Gauge,
   Info,
+  Layers,
   Library,
   LockKeyhole,
   RotateCcw,
@@ -93,6 +94,8 @@ type Evaluation = {
   baseQuality: number;
   focusBonus: number;
   trapPenalty: number;
+  redundancyPenalty: number;
+  redundantTypes: string[];
   synergyBonus: number;
   specialSynergy: { label: string; bonus: number; note: string } | null;
   discoveredLibraryIds: string[];
@@ -963,7 +966,7 @@ const CARDS: Card[] = [
     type: "VAGO",
     description:
       "Pede para a IA fazer bem, lembrando que qualquer saída serve.",
-    cost: 5,
+    cost: 4,
     quality: 2,
     tags: [],
     symbol: "☆",
@@ -1050,6 +1053,21 @@ const hasTags = (cards: Card[], tags: string[]) =>
 const hasTypes = (cards: Card[], types: string[]) =>
   types.every(type => cards.some(card => card.type === type));
 
+/** Tipos cuja repetição é intencional e já premiada por sinergias próprias. */
+const REDUNDANCY_EXEMPT = new Set(["EXEMPLO", "ESTRATÉGIA", "QUALIDADE"]);
+
+/** Conta apenas as repetições realmente penalizáveis. */
+function getRedundantTypes(cards: Card[]) {
+  const counts = new Map<string, number>();
+  for (const card of cards) {
+    if (REDUNDANCY_EXEMPT.has(card.type)) continue;
+    counts.set(card.type, (counts.get(card.type) ?? 0) + 1);
+  }
+  return Array.from(counts.entries())
+    .filter(([, count]) => count > 1)
+    .flatMap(([type, count]) => Array(count - 1).fill(type) as string[]);
+}
+
 const LIBRARY_SYNERGIES: LibrarySynergy[] = [
   {
     id: "one-shot",
@@ -1100,7 +1118,16 @@ const LIBRARY_SYNERGIES: LibrarySynergy[] = [
     bonus: -5,
     matches: cards => cards.some(card => card.trap),
   },
-
+  {
+    id: "redundancy",
+    label: "Redundância",
+    category: "ARMADILHA",
+    requirement: "2 cartas do mesmo tipo sem sinergia",
+    detail:
+      "Dois TOMs ou dois FORMATOS competindo entre si criam instruções contraditórias. A IA escolhe uma e ignora a outra — você pagou pelas duas. Exemplos e Estratégias são exceção: ali repetir é técnica.",
+    bonus: -15,
+    matches: cards => getRedundantTypes(cards).length > 0,
+  },
   {
     id: "chaining-multi",
     label: "Encadeamento Múltiplo",
@@ -1333,11 +1360,19 @@ function chooseCpu(
         ? 3
         : 2;
   const chaotic = personality.title === "caótica";
+  const takenTypes = new Set<string>();
   for (const card of ranking) {
     if (card.trap && !chaotic) continue;
+    if (
+      !chaotic &&
+      !REDUNDANCY_EXEMPT.has(card.type) &&
+      takenTypes.has(card.type)
+    )
+      continue;
     const price = card.liveCost ?? card.cost;
     if (picks.length >= maxCards || spend + price > budget) continue;
     picks.push(card.id);
+    takenTypes.add(card.type);
     spend += price;
   }
 
@@ -1386,7 +1421,7 @@ function buildRound(
     ...randomizedCards.filter(card => !guaranteedIds.has(card.id)),
   ];
 
-  const market = marketPool.slice(0, 10).map(card => ({
+  const market = marketPool.slice(0, 12).map(card => ({
     ...card,
     liveCost: card.trap
       ? Math.max(3, Math.round(card.cost * (1 + Math.random() * 0.3)))
@@ -1431,6 +1466,9 @@ function evaluate(
   const focusBonus = matchedTags.length * 2;
   const trapCount = cards.filter(card => card.trap).length;
   const trapPenalty = trapCount * 10;
+  const redundantTypes = getRedundantTypes(cards);
+  // −15% por repetição, com teto de −45% para não zerar prompts grandes.
+  const redundancyRate = Math.min(0.45, redundantTypes.length * 0.15);
 
   const synergyActive = synergy.tags.every(tag =>
     cards.some(card => card.tags.includes(tag))
@@ -1506,16 +1544,20 @@ function evaluate(
   const discoveredLibraryIds = LIBRARY_SYNERGIES.filter(entry =>
     entry.matches(cards, task, synergyActive)
   ).map(entry => entry.id);
-  const quality = Math.max(
+  const rawQuality = Math.max(
     0,
     baseQuality + focusBonus + synergyBonus + specialBonus - trapPenalty
   );
+  const redundancyPenalty = Math.round(rawQuality * redundancyRate);
+  const quality = Math.max(0, rawQuality - redundancyPenalty);
   return {
     cards,
     spent,
     baseQuality,
     focusBonus,
-    trapPenalty, // ← nova
+    trapPenalty,
+    redundancyPenalty, // ← nova
+    redundantTypes, // ← nova
     synergyBonus,
     specialSynergy,
     discoveredLibraryIds,
@@ -1558,6 +1600,7 @@ function MarketCard({
   selected,
   disabled,
   scolded,
+  redundant,
   onBuy,
   index,
 }: {
@@ -1565,12 +1608,13 @@ function MarketCard({
   selected: boolean;
   disabled: boolean;
   scolded: boolean;
+  redundant: boolean;
   onBuy: () => void;
   index: number;
 }) {
   return (
     <button
-      className={`market-card ${selected ? "is-selected" : ""} ${scolded ? "is-scolded" : ""}`}
+      className={`market-card ${selected ? "is-selected" : ""} ${scolded ? "is-scolded" : ""} ${card.trap ? "is-trap-card" : ""} ${redundant ? "is-redundant" : ""}`}
       disabled={disabled}
       onClick={onBuy}
       style={{ "--delay": `${index * 45}ms` } as CSSProperties}
@@ -1583,7 +1627,10 @@ function MarketCard({
       )}
       <div className="market-card-top">
         <span className="card-symbol">{card.symbol}</span>
-        <span className="card-type">{card.type}</span>
+        <span className="card-type">
+          {card.type}
+          {redundant && <i className="dupe-flag">dup</i>}
+        </span>
         <span className="card-price">
           <Coins size={13} />
           {card.liveCost}
@@ -2069,15 +2116,16 @@ export default function App() {
                   <MarketCard
                     key={card.id}
                     card={card}
+                    index={index}
                     selected={selectedIds.includes(card.id)}
+                    disabled={phase !== "auction"}
                     scolded={scoldedId === card.id}
-                    disabled={
-                      phase !== "auction" ||
-                      (!selectedIds.includes(card.id) &&
-                        card.liveCost! > wallet)
+                    redundant={
+                      !selectedIds.includes(card.id) &&
+                      !REDUNDANCY_EXEMPT.has(card.type) &&
+                      selectedCards.some(picked => picked.type === card.type)
                     }
                     onBuy={() => buyCard(card)}
-                    index={index}
                   />
                 ))}
               </div>
@@ -2198,15 +2246,18 @@ export default function App() {
                   </div>
                 </div>
 
-                {result.player.trapPenalty > 0 && (
-                  <div className="trap-warning">
-                    <TriangleAlert size={15} />
+                {result.player.redundancyPenalty > 0 && (
+                  <div className="trap-warning is-redundancy">
+                    <Layers size={15} />
                     <span>
-                      <b>−{result.player.trapPenalty} de qualidade:</b> você
-                      comprou {result.player.cards.filter(c => c.trap).length}{" "}
-                      carta(s) vaga(s). Adjetivos como "criativo" ou
-                      "profissional" custam moedas e não dizem à IA <b>o que</b>{" "}
-                      fazer. Troque por um critério verificável.
+                      <b>−{result.player.redundancyPenalty} por redundância</b>{" "}
+                      (
+                      {Array.from(new Set(result.player.redundantTypes)).join(
+                        ", "
+                      )}
+                      ). Duas instruções do mesmo tipo competem entre si — a IA
+                      obedece uma e descarta a outra.{" "}
+                      <b>Comprar tudo não é estratégia.</b>
                     </span>
                   </div>
                 )}

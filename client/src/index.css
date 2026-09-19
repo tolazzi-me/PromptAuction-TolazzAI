@@ -634,9 +634,10 @@ button:focus-visible {
 }
 .market-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 9px;
 }
+
 .market-card {
   min-height: 132px;
   padding: 12px 12px 10px;
@@ -1992,6 +1993,11 @@ button:focus-visible {
     opacity: 1;
   }
 }
+@media (max-width: 1180px) {
+  .market-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
 @media (max-width: 980px) {
   .topbar-center {
     display: none;
@@ -2318,7 +2324,7 @@ button:focus-visible {
     padding: 6px 9px;
   }
 }
-/* ===== CARTAS ARMADILHA (VAGO) ===== */
+/* ===== CARTAS ARMADILHA (VAGO) ===== 
 .market-card.is-trap-card .card-type {
   color: #c99a6f;
 }
@@ -2330,7 +2336,7 @@ button:focus-visible {
   border-color: #e0703f;
   background: rgba(74, 28, 18, 0.5);
 }
-
+*/
 .reveal-card.is-trap {
   background: linear-gradient(
     90deg,
@@ -2380,4 +2386,38 @@ button:focus-visible {
 .library-item.is-trap-synergy.is-discovered {
   background: rgba(88, 32, 24, 0.55);
   border-color: rgba(255, 112, 80, 0.3);
+}
+/* ===== REDUNDÂNCIA ===== */
+.market-card.is-redundant {
+  border-color: rgba(255, 138, 76, 0.22);
+}
+.market-card.is-redundant:not(:hover) {
+  opacity: 0.82;
+}
+.dupe-flag {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(255, 110, 80, 0.18);
+  border: 1px solid rgba(255, 110, 80, 0.32);
+  color: #ff9d78;
+  font:
+    600 6px/1.4 "DM Mono",
+    monospace;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  vertical-align: 1px;
+}
+
+.trap-warning.is-redundancy {
+  border-color: rgba(255, 176, 92, 0.3);
+  background: rgba(92, 56, 18, 0.22);
+  color: #e6c297;
+}
+.trap-warning.is-redundancy svg {
+  color: #ffb45f;
+}
+.trap-warning.is-redundancy b {
+  color: #ffd2a3;
 }
