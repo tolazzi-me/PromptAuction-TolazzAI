@@ -288,6 +288,28 @@ const CARDS: Card[] = [
     symbol: "◎",
   },
   {
+    id: "instruction",
+    label: "Instrução detalhada",
+    type: "INSTRUÇÃO",
+    description:
+      "Diz explicitamente o que a IA deve fazer com o material recebido.",
+    cost: 2,
+    quality: 8,
+    tags: ["brief"],
+    symbol: "⬟",
+  },
+  {
+    id: "instruction-2",
+    label: "Instrução do que fazer",
+    type: "INSTRUÇÃO",
+    description:
+      "Diz explicitamente o que a IA deve fazer com o material recebido.",
+    cost: 2,
+    quality: 8,
+    tags: ["brief"],
+    symbol: "⬟",
+  },
+  {
     id: "objective",
     label: "Objetivo explícito",
     type: "DIREÇÃO",
@@ -368,6 +390,16 @@ const CARDS: Card[] = [
     symbol: "◆",
   },
   {
+    id: "task-3",
+    label: "Tarefa Guiada",
+    type: "TAREFA",
+    description: "Diz com precisão o que a IA deve fazer.",
+    cost: 3,
+    quality: 8,
+    tags: ["brief", "specific"],
+    symbol: "◆",
+  },
+  {
     id: "promise",
     label: "Prometer melhora",
     type: "AÇÃO",
@@ -410,7 +442,7 @@ const CARDS: Card[] = [
   {
     id: "format",
     label: "Formato de saída",
-    type: "ESTRUTURA",
+    type: "FORMATO",
     description: "Pede lista, tabela, passos ou alternativas.",
     cost: 3,
     quality: 9,
@@ -499,7 +531,7 @@ const CARDS: Card[] = [
   },
   {
     id: "farewell",
-    label: "Despedida",
+    label: "Formato de despedida",
     type: "FORMATO",
     description: "Fecha o texto com cuidado e direção.",
     cost: 1,
@@ -509,7 +541,7 @@ const CARDS: Card[] = [
   },
   {
     id: "subject",
-    label: "Título de e-mail",
+    label: "Formato de 'Título de e-mail'",
     type: "FORMATO",
     description: "Dá contexto antes mesmo da leitura.",
     cost: 2,
@@ -739,6 +771,16 @@ const CARDS: Card[] = [
     symbol: "⚖",
   },
   {
+    id: "self_eval-2",
+    label: "AutoCrítica",
+    type: "QUALIDADE",
+    description: "Pede que a IA avalie sua resposta.",
+    cost: 4,
+    quality: 10,
+    tags: ["structure", "specific", "evidence"],
+    symbol: "⚖",
+  },
+  {
     id: "positive_frame",
     label: "Foco Positivo",
     type: "POSITIVO",
@@ -759,6 +801,47 @@ const CARDS: Card[] = [
     quality: 12,
     tags: ["structure", "detail", "evidence"],
     symbol: "∴",
+  },
+  {
+    id: "chain_of_thought-2",
+    label: "Cadeia de Pensamento",
+    type: "ESTRATÉGIA",
+    description:
+      "Pede que a IA construa o raciocínio passo a passo antes de dar a resposta final.",
+    cost: 5,
+    quality: 12,
+    tags: ["structure", "detail", "evidence"],
+    symbol: "∴",
+  },
+  {
+    id: "chaining",
+    label: "Encadeamento",
+    type: "ESTRATÉGIA",
+    description: "Atua conversando com a IA.",
+    cost: 3,
+    quality: 10,
+    tags: ["structure", "detail", "evidence"],
+    symbol: "⟿",
+  },
+  {
+    id: "chaining-2",
+    label: "Encadeamento de prompt",
+    type: "ESTRATÉGIA",
+    description: "Reaproveita a resposta anterior para gerar mais conteúdo.",
+    cost: 3,
+    quality: 10,
+    tags: ["structure", "detail", "evidence"],
+    symbol: "⟿",
+  },
+  {
+    id: "chaining-3",
+    label: "Encadeamento de prompt",
+    type: "ESTRATÉGIA",
+    description: "Reaproveita a resposta anterior para gerar mais conteúdo.",
+    cost: 3,
+    quality: 10,
+    tags: ["structure", "detail", "evidence"],
+    symbol: "⟿",
   },
 ];
 
@@ -833,13 +916,34 @@ const LIBRARY_SYNERGIES: LibrarySynergy[] = [
   {
     id: "pitaco",
     label: "Método PITACO",
-    category: "RARO",
-    requirement: "Persona + Tarefa + Público + Contexto + Formato",
-    detail: "Os cinco pilares formam uma arquitetura completa de prompt.",
-    bonus: 30,
+    category: "LENDÁRIO",
+    requirement: "Persona + Instrução + Tarefa + Público + Contexto + Formato",
+    detail:
+      "Os seis pilares cobrem quem responde, o que fazer, qual a tarefa, para quem, em que situação e em qual formato de saída.",
+    bonus: 45,
     matches: cards =>
-      hasTypes(cards, ["PERSONA", "TAREFA", "PÚBLICO", "CONTEXTO", "FORMATO"]),
+      hasTypes(cards, [
+        "PERSONA",
+        "INSTRUÇÃO",
+        "TAREFA",
+        "PÚBLICO",
+        "CONTEXTO",
+        "FORMATO",
+      ]),
   },
+
+  {
+    id: "chaining-multi",
+    label: "Encadeamento Múltiplo",
+    category: "ESTRATÉGIA",
+    requirement: "2 ou mais cartas de Encadeamento",
+    detail:
+      "Uma carta de Encadeamento sozinha não encadeia nada: o ganho aparece quando a resposta anterior alimenta a etapa seguinte.",
+    bonus: 16,
+    matches: cards =>
+      cards.filter(card => card.id.startsWith("chaining")).length > 1,
+  },
+
   {
     id: "self-eval-critique",
     label: "Autoavaliação e Crítica",
@@ -848,7 +952,7 @@ const LIBRARY_SYNERGIES: LibrarySynergy[] = [
     detail:
       "Forçar a IA a revisar criticamente a própria resposta antes de entregá-la reduz erros e alucinações.",
     bonus: 15,
-    matches: cards => cards.some(card => card.id === "self_eval"),
+    matches: cards => cards.some(card => card.id.startsWith("self_eval")),
   },
   {
     id: "cot-reasoning",
@@ -858,7 +962,8 @@ const LIBRARY_SYNERGIES: LibrarySynergy[] = [
     detail:
       "Obrigar a IA a descrever sua lógica antes do resultado final previne erros matemáticos e alucinações complexas.",
     bonus: 20,
-    matches: cards => cards.some(card => card.id === "chain_of_thought"),
+    matches: cards =>
+      cards.some(card => card.id.startsWith("chain_of_thought")),
   },
   {
     id: "task-synergy",
@@ -1085,7 +1190,7 @@ function buildRound(
   const previousIds = new Set(previousMarketIds);
   const randomizedCards = shuffled(CARDS, entropy);
   const freshCards = randomizedCards.filter(card => !previousIds.has(card.id));
-  const coreIds = ["persona", "context", "audience"];
+  const coreIds = ["persona", "context", "audience", "task"];
   const coreCards = coreIds
     .map(id => randomizedCards.find(card => card.id === id))
     .filter((card): card is Card => Boolean(card));
@@ -1149,44 +1254,69 @@ function evaluate(
   const exampleCount = cards.filter(card =>
     card.tags.includes("example")
   ).length;
-  const pitacoOrder = ["PERSONA", "TAREFA", "PÚBLICO", "CONTEXTO", "FORMATO"];
-  const isPitaco = pitacoOrder.every(requiredType =>
-    cards.some(card => card.type === requiredType)
-  );
-  const hasSelfEval = cards.some(card => card.id === "self_eval");
-  const hasCoT = cards.some(card => card.id === "chain_of_thought");
+  const pitacoOrder = [
+    "PERSONA",
+    "INSTRUÇÃO",
+    "TAREFA",
+    "PÚBLICO",
+    "CONTEXTO",
+    "FORMATO",
+  ];
+  const pitacoScore = pitacoOrder.filter(t =>
+    cards.some(card => card.type === t)
+  ).length;
+  const isPitaco = pitacoScore === pitacoOrder.length;
+
+  const hasSelfEval = cards.some(card => card.id.startsWith("self_eval"));
+  const hasCoT = cards.some(card => card.id.startsWith("chain_of_thought"));
+  const chainCount = cards.filter(card =>
+    card.id.startsWith("chaining")
+  ).length;
 
   const specialSynergy = isPitaco
     ? {
         label: "Método PITACO",
-        bonus: 30,
-        note: "Persona, Tarefa, Público, Contexto e Formato na ordem certa formam uma arquitetura rara.",
+        bonus: 45,
+        note: "Persona, Instrução, Tarefa, Público, Contexto e Formato formam a arquitetura completa do prompt lendário.",
       }
-    : hasCoT
+    : pitacoScore === 5
       ? {
-          label: "Chain of Thought (CoT)",
+          label: "PITACO incompleto",
           bonus: 20,
-          note: "Obrigar a IA a raciocinar passo a passo antes da resposta previne erros de lógica.",
+          note: "Cinco dos seis pilares. Falta um elemento para o modelo parar de adivinhar.",
         }
-      : hasSelfEval
+      : hasCoT
         ? {
-            label: "Autoavaliação e Crítica",
-            bonus: 15,
-            note: "Pedir uma revisão crítica antes da resposta final eleva o raciocínio da IA.",
+            label: "Chain of Thought (CoT)",
+            bonus: 20,
+            note: "Obrigar a IA a raciocinar passo a passo antes da resposta previne erros de lógica.",
           }
-        : exampleCount > 1
+        : hasSelfEval
           ? {
-              label: "Few-shot",
-              bonus: 18,
-              note: "Mais de um exemplo ajuda a IA a inferir o padrão antes de responder.",
+              label: "Autoavaliação e Crítica",
+              bonus: 15,
+              note: "Pedir uma revisão crítica antes da resposta final eleva o raciocínio da IA.",
             }
-          : exampleCount === 1
+          : exampleCount > 1
             ? {
-                label: "One-shot",
-                bonus: 10,
-                note: "Um exemplo concreto mostra à IA o estilo ou padrão esperado.",
+                label: "Few-shot",
+                bonus: 18,
+                note: "Mais de um exemplo ajuda a IA a inferir o padrão antes de responder.",
               }
-            : null;
+            : exampleCount === 1
+              ? {
+                  label: "One-shot",
+                  bonus: 10,
+                  note: "Um exemplo concreto mostra à IA o estilo ou padrão esperado.",
+                }
+              : chainCount > 1
+                ? {
+                    label: "Encadeamento múltiplo",
+                    bonus: 16,
+                    note: "Duas ou mais etapas encadeadas quebram a tarefa em pedidos simples e verificáveis.",
+                  }
+                : null;
+
   const specialBonus = specialSynergy?.bonus ?? 0;
   const discoveredLibraryIds = LIBRARY_SYNERGIES.filter(entry =>
     entry.matches(cards, task, synergyActive)
