@@ -23,7 +23,9 @@ import {
   Library,
   LockKeyhole,
   RotateCcw,
+  Skull,
   Sparkles,
+  Swords,
   Target,
   TriangleAlert,
   Trophy,
@@ -1039,6 +1041,15 @@ const PERSONALITIES: Personality[] = [
   },
 ];
 
+const BLACK_PERSONALITY: Personality = {
+  name: "Black",
+  title: "ANOMALIA",
+  detail:
+    "Uma força insondável com 40 pontos de vantagem nativa em cada rodada.",
+  icon: Skull,
+  color: "black",
+};
+
 const TIPS = [
   "Gastar pouco, mas certo, costuma vencer gastar muito errado.",
   "Qualidade é importante; eficiência é qualidade por moeda.",
@@ -1345,7 +1356,11 @@ function chooseCpu(
     const bSyn = b.tags.filter(tag => synergy.tags.includes(tag)).length;
     if (personality.title === "econômica")
       return b.quality / b.cost - a.quality / a.cost;
-    if (personality.title === "estrategista" || personality.title === "BOSS")
+    if (
+      personality.title === "estrategista" ||
+      personality.title === "BOSS" ||
+      personality.name === "Black"
+    )
       return (
         bFocus * 4 + bSyn * 5 + b.quality - (aFocus * 4 + aSyn * 5 + a.quality)
       );
@@ -1356,7 +1371,9 @@ function chooseCpu(
   const maxCards =
     personality.title === "caótica"
       ? 4
-      : personality.title === "estrategista" || personality.title === "BOSS"
+      : personality.title === "estrategista" ||
+          personality.title === "BOSS" ||
+          personality.name === "Black"
         ? 3
         : 2;
   const chaotic = personality.title === "caótica";
@@ -1384,7 +1401,8 @@ function buildRound(
   playerBudget: number,
   cpuBudget: number,
   previousTaskId = "",
-  previousMarketIds: string[] = []
+  previousMarketIds: string[] = [],
+  overridePersonality?: Personality
 ): RoundState {
   const entropy = Math.random() * 100000 + Date.now() + round * 7919;
   const taskPool = TASKS.filter(candidate => candidate.id !== previousTaskId);
@@ -1393,7 +1411,7 @@ function buildRound(
   const random = Math.random();
   const synergy =
     task.synergyOptions[Math.floor(random * task.synergyOptions.length)];
-  const personality = getPersonality(round);
+  const personality = overridePersonality ?? getPersonality(round);
   const previousIds = new Set(previousMarketIds);
   const randomizedCards = shuffled(CARDS, entropy);
   const freshCards = randomizedCards.filter(card => !previousIds.has(card.id));
@@ -1728,6 +1746,32 @@ export default function App() {
       }
     }
   );
+  const [hasDefeatedAres, setHasDefeatedAres] = useState<boolean>(() => {
+    try {
+      if (
+        typeof window !== "undefined" &&
+        new URLSearchParams(window.location.search).get("ares") === "true"
+      ) {
+        localStorage.setItem("prompt-auction-ares-defeated", "true");
+        return true;
+      }
+      return localStorage.getItem("prompt-auction-ares-defeated") === "true";
+    } catch {
+      return false;
+    }
+  });
+  const [dismissBlackScreen, setDismissBlackScreen] = useState(false);
+  const isTestWinBlack = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    const params = new URLSearchParams(window.location.search);
+    return (
+      params.get("win_black") === "true" ||
+      params.get("winblack") === "true" ||
+      params.get("black") === "win" ||
+      params.get("vitoria") === "black"
+    );
+  }, []);
+  const [dismissWhiteVictoryScreen, setDismissWhiteVictoryScreen] = useState(false);
   const revealTimer = useRef<number | null>(null);
   const [scoldedId, setScoldedId] = useState<string | null>(null);
   const scoldTimer = useRef<number | null>(null);
@@ -1785,8 +1829,13 @@ export default function App() {
         roundState.synergy
       );
       const cpuEval = evaluate(cpuCards, roundState.task, roundState.synergy);
-      // Bônus roubado do BOSS (20 pontos de qualidade extras)
-      if (roundState.personality.title === "BOSS") {
+      // Bônus roubado da CPU: Black (+40) ou BOSS (+20)
+      if (roundState.personality.name === "Black") {
+        cpuEval.quality += 40;
+        cpuEval.efficiency = cpuEval.spent
+          ? cpuEval.quality / cpuEval.spent
+          : 0;
+      } else if (roundState.personality.title === "BOSS") {
         cpuEval.quality += 20;
         // Recalcula a eficiência com os novos pontos
         cpuEval.efficiency = cpuEval.spent
@@ -1805,6 +1854,8 @@ export default function App() {
         winner,
         synergy: roundState.synergy,
       });
+      setDismissBlackScreen(false);
+      setDismissWhiteVictoryScreen(false);
       const newlyDiscovered = playerEval.discoveredLibraryIds;
       if (newlyDiscovered.length)
         setDiscoveredSynergies(current => {
@@ -1815,14 +1866,26 @@ export default function App() {
           );
           return next;
         });
+      if (winner === "player" && roundState.personality.name === "Ares") {
+        try {
+          localStorage.setItem("prompt-auction-ares-defeated", "true");
+        } catch {
+          // ignore
+        }
+        setHasDefeatedAres(true);
+      }
       if (winner !== "tie")
         setScore(current => ({ ...current, [winner]: current[winner] + 1 }));
       setPhase("result");
       setNotice(
         winner === "player"
-          ? "Sua eficiência encontrou o ponto certo."
+          ? roundState.personality.name === "Black"
+            ? "Triunfo lendário! Você superou os 40 pontos de vantagem de Black!"
+            : "Sua eficiência encontrou o ponto certo."
           : winner === "cpu"
-            ? "A CPU levou essa pela relação valor/moeda."
+            ? roundState.personality.name === "Black"
+              ? "Black venceu a rodada com sua vantagem insondável (+40)."
+              : "A CPU levou essa pela relação valor/moeda."
             : "Empate técnico — a eficiência ficou colada."
       );
     }, 900);
@@ -1912,20 +1975,26 @@ export default function App() {
       MAX_WALLET,
       roundState.cpuBudget - result.cpu.spent + 10
     );
+    const isVersusBlack = roundState.personality.name === "Black";
     setRoundState(
       buildRound(
         roundState.round + 1,
         nextPlayerBudget,
         nextCpuBudget,
         roundState.task.id,
-        roundState.market.map(card => card.id)
+        roundState.market.map(card => card.id),
+        isVersusBlack ? BLACK_PERSONALITY : undefined
       )
     );
     setSelectedIds([]);
     setResult(null);
     setPhase("auction");
+    setDismissBlackScreen(false);
+    setDismissWhiteVictoryScreen(false);
     setNotice(
-      "Novo mercado, nova combinação. Nenhuma carta revela tudo de primeira."
+      isVersusBlack
+        ? "Novo mercado contra Black. O abismo ainda tem +40 de vantagem."
+        : "Novo mercado, nova combinação. Nenhuma carta revela tudo de primeira."
     );
   };
 
@@ -1935,17 +2004,37 @@ export default function App() {
     setResult(null);
     setScore({ player: 0, cpu: 0 });
     setPhase("auction");
+    setDismissBlackScreen(false);
+    setDismissWhiteVictoryScreen(false);
     setNotice(
       "Nova partida iniciada. O melhor prompt nem sempre é o mais caro."
     );
     demoRound.current = 0;
   };
 
+  const fightBlack = () => {
+    if (phase === "thinking") return;
+    setDismissBlackScreen(false);
+    setDismissWhiteVictoryScreen(false);
+    setRoundState(buildRound(1, 25, 25, "", [], BLACK_PERSONALITY));
+    setSelectedIds([]);
+    setResult(null);
+    setScore({ player: 0, cpu: 0 });
+    setPhase("auction");
+    setNotice(
+      "Você desafiou Black. Ele possui 40 pontos de vantagem nativa em cada rodada."
+    );
+  };
+
   const winnerLabel =
     result?.winner === "player"
-      ? "Você venceu a rodada"
+      ? roundState.personality.name === "Black"
+        ? "Você derrotou Black!"
+        : "Você venceu a rodada"
       : result?.winner === "cpu"
-        ? "A CPU venceu a rodada"
+        ? roundState.personality.name === "Black"
+          ? "Black venceu a rodada"
+          : "A CPU venceu a rodada"
         : "Empate técnico";
   const phaseLabel =
     phase === "auction"
@@ -1959,6 +2048,14 @@ export default function App() {
   const CpuIcon = roundState.personality.icon;
   const aresWins =
     result?.winner === "cpu" && roundState.personality.name === "Ares";
+  const blackWins =
+    result?.winner === "cpu" && roundState.personality.name === "Black";
+  const playerWinsAgainstBlack =
+    (result?.winner === "player" && roundState.personality.name === "Black") ||
+    (phase === "gameover" &&
+      roundState.personality.name === "Black" &&
+      score.player > score.cpu) ||
+    isTestWinBlack;
 
   return (
     <div className="game-shell">
@@ -2184,7 +2281,11 @@ export default function App() {
                       eficiência.
                     </p>
                   </div>
-                  <div className={`winner-stamp ${result.winner}`}>
+                  <div
+                    className={`winner-stamp ${result.winner} ${
+                      aresWins ? "ares" : blackWins ? "black" : ""
+                    }`}
+                  >
                     <Trophy size={18} />
                     <span>
                       {result.winner === "tie" ? "0 pts" : "+1 ponto"}
@@ -2224,16 +2325,22 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* ---------- LADO DA CPU / ARES ---------- */}
+                  {/* ---------- LADO DA CPU / ARES / BLACK ---------- */}
                   <div
                     className={`reveal-side ${result.winner === "cpu" ? "winner-side" : ""} ${
                       aresWins ? "ares-rage" : ""
-                    }`}
+                    } ${blackWins ? "black-rage" : ""}`}
                   >
                     {aresWins && (
                       <div className="ares-taunt">
                         <Flame size={13} />
                         <span>Haha, desista</span>
+                      </div>
+                    )}
+                    {blackWins && (
+                      <div className="black-taunt">
+                        <Skull size={13} />
+                        <span>Black Persiste</span>
                       </div>
                     )}
                     <div className="reveal-side-head">
@@ -2411,17 +2518,64 @@ export default function App() {
               </span>
               <ArrowRight size={15} />
             </button>
+
+            {hasDefeatedAres && (
+              <button
+                className={`black-challenge-btn ${
+                  roundState.personality.name === "Black" ? "is-active" : ""
+                }`}
+                title="Desafiar a entidade Black (+40 de vantagem)"
+                aria-label="Desafiar Black"
+                onClick={fightBlack}
+                disabled={phase === "thinking"}
+              >
+                <span className="black-challenge-icon">
+                  <Skull size={18} />
+                </span>
+                <span className="black-challenge-copy">
+                  <span className="black-challenge-heading">
+                    <strong>
+                      {roundState.personality.name === "Black"
+                        ? "Em duelo com Black"
+                        : "Lutar com Black"}
+                    </strong>
+                    <span className="black-challenge-tag">+40 VANTAGEM</span>
+                  </span>
+                  <small>
+                    {roundState.personality.name === "Black"
+                      ? "Batalha ativa contra o Abismo"
+                      : "Oponente secreto desbloqueado"}
+                  </small>
+                </span>
+                <Swords size={16} className="black-challenge-swords" />
+              </button>
+            )}
+
             <section className="cpu-panel">
               <div className="cpu-head">
                 <div
-                  className="cpu-avatar"
+                  className={`cpu-avatar ${
+                    roundState.personality.name === "Black"
+                      ? "black-avatar"
+                      : ""
+                  }`}
                   style={
-                    roundState.personality.title === "BOSS"
-                      ? { background: "#ff5252", color: "#4a0000" }
-                      : {}
+                    roundState.personality.name === "Black"
+                      ? {
+                          background: "#08080a",
+                          color: "#ffffff",
+                          border: "1px solid rgba(255, 255, 255, 0.28)",
+                          boxShadow:
+                            "0 0 16px rgba(0, 0, 0, 0.95), inset 0 0 8px rgba(255, 255, 255, 0.08)",
+                        }
+                      : roundState.personality.title === "BOSS"
+                        ? { background: "#ff5252", color: "#4a0000" }
+                        : {}
                   }
                 >
-                  {roundState.personality.title === "BOSS" ? (
+                  {roundState.personality.name === "Black" ? (
+                    <Skull size={16} />
+                  ) : roundState.personality.title === "BOSS" ? (
                     <Flame size={16} />
                   ) : (
                     <Bot size={16} />
@@ -2504,6 +2658,209 @@ export default function App() {
           </div>
         )}
       </main>
+      {blackWins && !dismissBlackScreen && (
+        <div
+          className="black-persist-screen"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="black-persist-title"
+        >
+          <div className="black-persist-backdrop" />
+          <div className="black-persist-vignette" />
+          <div className="black-persist-particles" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className="black-persist-content">
+            <div className="black-persist-glitch" aria-hidden="true">
+              <Skull size={44} strokeWidth={1.7} />
+            </div>
+            <div className="black-persist-badge">ANOMALIA · +40 VANTAGEM</div>
+            <h1 id="black-persist-title" className="black-persist-title">
+              Black Persiste
+            </h1>
+            <p className="black-persist-subtitle">
+              Black - Uma IA LLM corrompida encontrada nas entradas da DarkWeb,
+              ela sonda o cyberespaço dark infinitamente.
+            </p>
+            {result && (
+              <div className="black-persist-scores">
+                <div className="black-persist-card">
+                  <span>SEU SCORE</span>
+                  <strong>{formatScore(result.player.efficiency)}</strong>
+                  <small>
+                    qualidade {result.player.quality} ÷ {result.player.spent}
+                  </small>
+                </div>
+                <div className="black-persist-divider">VS</div>
+                <div className="black-persist-card is-black">
+                  <span>BLACK (+40)</span>
+                  <strong>{formatScore(result.cpu.efficiency)}</strong>
+                  <small>
+                    qualidade {result.cpu.quality} ÷ {result.cpu.spent}
+                  </small>
+                </div>
+              </div>
+            )}
+            <div className="black-persist-actions">
+              <button
+                className="black-persist-btn primary"
+                onClick={startNextRound}
+              >
+                <span>Próxima rodada</span>
+                <ArrowRight size={16} />
+              </button>
+              <button
+                className="black-persist-btn secondary"
+                onClick={fightBlack}
+              >
+                <RotateCcw size={15} />
+                <span>Tentar novamente</span>
+              </button>
+              <button
+                className="black-persist-btn ghost"
+                onClick={() => setDismissBlackScreen(true)}
+              >
+                <Eye size={15} />
+                <span>Ver tabuleiro</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {blackWins && dismissBlackScreen && (
+        <aside
+          className="black-dismissed-banner"
+          onClick={() => setDismissBlackScreen(false)}
+          title="Clique para restaurar a tela cheia de Black"
+        >
+          <Skull size={15} />
+          <span>
+            <b>Black Persiste</b> — +40 de vantagem venceu esta rodada (clique
+            para voltar)
+          </span>
+        </aside>
+      )}
+
+      {playerWinsAgainstBlack && !dismissWhiteVictoryScreen && (
+        <div
+          className="white-victory-screen"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="white-victory-title"
+        >
+          <div className="white-victory-backdrop" />
+          <div className="white-victory-radiance" />
+          <div className="white-victory-particles" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className="white-victory-content">
+            <div className="white-victory-badge">
+              <Sparkles size={16} />
+              <span>MESTRE DA ENGENHARIA DE PROMPT · PURIFICAÇÃO TOTAL</span>
+            </div>
+            <div className="white-victory-icon-wrap">
+              <Trophy size={48} strokeWidth={2} />
+            </div>
+            <h1 id="white-victory-title" className="white-victory-title">
+              Você Venceu Black!
+            </h1>
+            <h2 className="white-victory-subtitle">
+              Você se tornou um mestre em engenharia de prompt e limpou a DarkWeb da IA corrompida.
+            </h2>
+            <p className="white-victory-desc">
+              Sua maestria na arquitetura de instruções, clareza e sinergia de contexto superou os 40 pontos de vantagem nativa do abismo. A entidade corrompida que sondava o ciberespaço sombrio foi purificada e desintegrada pela sua precisão lógica.
+            </p>
+
+            <div className="white-victory-scores">
+              <div className="white-victory-card is-player">
+                <span>SUA EFICIÊNCIA</span>
+                <strong>
+                  {result
+                    ? formatScore(result.player.efficiency)
+                    : "18.5"}
+                </strong>
+                <small>
+                  {result
+                    ? `qualidade ${result.player.quality} ÷ custo ${result.player.spent}`
+                    : "prompt arquitetado com maestria"}
+                </small>
+              </div>
+              <div className="white-victory-vs">×</div>
+              <div className="white-victory-card is-defeated">
+                <span>BLACK (PURIFICADO)</span>
+                <strong>
+                  {result
+                    ? formatScore(result.cpu.efficiency)
+                    : "14.2"}
+                </strong>
+                <small>
+                  {result
+                    ? `qualidade ${result.cpu.quality} ÷ custo ${result.cpu.spent}`
+                    : "+40 de vantagem superados"}
+                </small>
+              </div>
+            </div>
+
+            <div className="white-victory-actions">
+              <button
+                className="white-victory-btn primary"
+                onClick={() => {
+                  setDismissWhiteVictoryScreen(false);
+                  if (isTestWinBlack) {
+                    window.history.replaceState(
+                      {},
+                      document.title,
+                      window.location.pathname
+                    );
+                  }
+                  restartMatch();
+                }}
+              >
+                <RotateCcw size={16} />
+                <span>Jogar novamente</span>
+              </button>
+              {result && (
+                <button
+                  className="white-victory-btn secondary"
+                  onClick={startNextRound}
+                >
+                  <span>Próxima rodada</span>
+                  <ArrowRight size={16} />
+                </button>
+              )}
+              <button
+                className="white-victory-btn ghost"
+                onClick={() => setDismissWhiteVictoryScreen(true)}
+              >
+                <Eye size={16} />
+                <span>Ver tabuleiro</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {playerWinsAgainstBlack && dismissWhiteVictoryScreen && (
+        <aside
+          className="white-dismissed-banner"
+          onClick={() => setDismissWhiteVictoryScreen(false)}
+          title="Clique para voltar para a tela de vitória"
+        >
+          <Trophy size={16} />
+          <span>
+            <b>Mestre em Engenharia de Prompt!</b> — Você limpou a DarkWeb e derrotou Black (clique para voltar)
+          </span>
+        </aside>
+      )}
       {libraryOpen && (
         <div
           className="info-backdrop"
