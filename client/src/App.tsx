@@ -1135,7 +1135,7 @@ const LIBRARY_SYNERGIES: LibrarySynergy[] = [
     requirement: "Persona + Instrução + Tarefa + Público + Contexto + Formato",
     detail:
       "Os seis pilares cobrem quem responde, o que fazer, qual a tarefa, para quem, em que situação e em qual formato de saída.",
-    bonus: 45,
+    bonus: 55,
     matches: cards =>
       hasTypes(cards, [
         "PERSONA",
@@ -1466,7 +1466,7 @@ function buildRound(
     ...randomizedCards.filter(card => !guaranteedIds.has(card.id)),
   ];
 
-  const market = marketPool.slice(0, 12).map(card => ({
+  const market = marketPool.slice(0, 14).map(card => ({
     ...card,
     liveCost: card.trap
       ? Math.max(3, Math.round(card.cost * (1 + Math.random() * 0.3)))
@@ -1546,7 +1546,7 @@ function evaluate(
   if (isPitaco) {
     specialSynergies.push({
       label: "Método PITACO",
-      bonus: 45,
+      bonus: 55,
       note: "Persona, Instrução, Tarefa, Público, Contexto e Formato formam a arquitetura completa do prompt lendário.",
     });
   } else if (pitacoScore === 5) {
@@ -2257,7 +2257,7 @@ export default function App() {
                     <Gavel size={13} /> mercado de palavras
                   </div>
                   <h3>
-                    Escolha suas cartas <span>· 10 disponíveis</span>
+                    Escolha suas cartas <span>· {roundState.market.length} disponíveis</span>
                   </h3>
                 </div>
                 <div className="market-instruction">
@@ -2511,7 +2511,9 @@ export default function App() {
             <section className="deck-panel">
               <div className="panel-title">
                 <span>seu prompt em construção</span>
-                <span className="deck-count">{selectedCards.length}/10</span>
+                <span className="deck-count">
+                  {selectedCards.length}/{roundState.market.length}
+                </span>
               </div>
               {selectedCards.length === 0 ? (
                 <div className="deck-empty">

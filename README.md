@@ -11,10 +11,10 @@ O objetivo não é apenas ter a maior qualidade bruta, mas a melhor **eficiênci
 
 ## ⚙️ Mecânicas Principais
 
-* **Mercado Dinâmico:** A cada rodada, 12 cartas aleatórias ficam disponíveis. Você deve analisar o *brief* (desafio da rodada) e comprar as peças que melhor resolvem o problema sem estourar o orçamento.
+* **Mercado Dinâmico:** A cada rodada, 14 cartas aleatórias ficam disponíveis. Você deve analisar o *brief* (desafio da rodada) e comprar as peças que melhor resolvem o problema sem estourar o orçamento.
 * **Eficiência vs. Qualidade:** Cartas mais baratas rendem menos qualidade isolada, mas podem ser o diferencial matemático para vencer a CPU na relação Custo-Benefício.
 * **Sinergias Secretas:** Combinar cartas específicas desbloqueia multiplicadores de pontuação e preenche sua "Biblioteca de Descobertas". Exemplos incluem:
-* *Método PITACO:* Persona + Tarefa + Público + Contexto + Formato (+30 pontos).
+* *Método PITACO:* Persona + Tarefa + Público + Contexto + Formato (+55 pontos).
 * *Chain of Thought (CoT):* Obriga a IA a descrever a lógica antes do resultado (+20 pontos).
 * *Autoavaliação e Crítica:* Força a IA a revisar a própria resposta (+15 pontos).
 
