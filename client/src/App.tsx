@@ -1711,6 +1711,9 @@ export default function App() {
   const [notice, setNotice] = useState(
     "Monte um prompt enxuto. A CPU está de olho."
   );
+  const [minCardsWarning, setMinCardsWarning] = useState(false);
+  const warnTimer = useRef<number | null>(null);
+
   const demoRound = useRef(0);
   const [infoOpen, setInfoOpen] = useState(true);
   const [libraryOpen, setLibraryOpen] = useState(false);
@@ -1758,6 +1761,16 @@ export default function App() {
 
   const finishRound = (ids: string[]) => {
     if (phase !== "auction") return;
+    if (ids.length < 2) {
+      setMinCardsWarning(true);
+      if (warnTimer.current) window.clearTimeout(warnTimer.current);
+      warnTimer.current = window.setTimeout(
+        () => setMinCardsWarning(false),
+        3000
+      );
+      return;
+    }
+
     const playerCards = roundState.market.filter(card => ids.includes(card.id));
     setSelectedIds(ids);
     setPhase("thinking");
@@ -2139,14 +2152,22 @@ export default function App() {
                   </span>
                   <span className="selected-cost">{playerSpent} moedas</span>
                 </div>
-                <button
-                  className="primary-button"
-                  onClick={() => finishRound(selectedIds)}
-                  disabled={phase !== "auction" || selectedIds.length === 0}
-                >
-                  {phase === "thinking" ? "CPU pensando…" : "Parar e revelar"}
-                  <ArrowRight size={16} />
-                </button>
+                <div className="seal-wrap">
+                  {minCardsWarning && (
+                    <span className="min-cards-callout" role="alert">
+                      <TriangleAlert size={13} /> Um bom prompt é formado por 2
+                      ou mais elementos
+                    </span>
+                  )}
+                  <button
+                    className="primary-button"
+                    disabled={phase !== "auction" || selectedIds.length === 0}
+                    onClick={() => finishRound(selectedIds)}
+                  >
+                    {phase === "thinking" ? "CPU pensando…" : "Parar e revelar"}
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
               </div>
             </section>
 
@@ -2585,145 +2606,150 @@ export default function App() {
             aria-labelledby="info-title"
             onClick={event => event.stopPropagation()}
           >
-            <button
-              className="info-back"
-              aria-label="Voltar"
-              onClick={() => setInfoOpen(false)}
-            >
-              <ArrowLeft size={16} /> Voltar
-            </button>
-            <button
-              className="info-close"
-              aria-label="Fechar ajuda"
-              onClick={() => setInfoOpen(false)}
-            >
-              ×
-            </button>
-            <div className="eyebrow" style={{ marginTop: "20px" }}>
-              <CircleHelp size={13} /> engenharia de prompt
-            </div>
-            <h2
-              id="info-title"
-              style={{ marginTop: "16px", marginBottom: "16px" }}
-            >
-              Quanto melhor a pergunta - melhor a resposta
-            </h2>
-            <p className="help-lead" style={{ marginBottom: "28px" }}>
-              A <b>Engenharia de Prompt</b> é a habilidade de guiar a
-              Inteligência Artificial. Não se trata de código, mas de combinar
-              clareza, contexto e restrições para extrair exatamente a resposta
-              que você imaginou.
-            </p>
-
-            <div className="prompt-explainer" style={{ padding: "20px" }}>
-              <div
-                className="prompt-explainer-title"
-                style={{ marginBottom: "12px" }}
+            <div className="info-modal-header">
+              <button
+                className="info-back"
+                aria-label="Voltar"
+                onClick={() => setInfoOpen(false)}
               >
-                <Sparkles size={14} /> Os Elementos de um Prompt
+                <ArrowLeft size={16} /> Voltar
+              </button>
+              <button
+                className="info-close"
+                aria-label="Fechar ajuda"
+                onClick={() => setInfoOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="help-modal-body">
+              <div className="eyebrow">
+                <CircleHelp size={13} /> engenharia de prompt
               </div>
-              <p>
-                Para a IA não ter que "adivinhar" o que você quer, forneça as
-                peças do quebra-cabeça. Veja como transformar um pedido genérico
-                em uma instrução de alto nível:
+              <h2 id="info-title">
+                Quanto melhor a pergunta - melhor a resposta
+              </h2>
+              <p className="help-lead">
+                A <b>Engenharia de Prompt</b> é a habilidade de guiar a
+                Inteligência Artificial. Não se trata de código, mas de combinar
+                clareza, contexto e restrições para extrair exatamente a
+                resposta que você imaginou.
               </p>
-              <div
-                className="prompt-example"
-                style={{ marginTop: "16px", marginBottom: "16px" }}
-              >
-                <span>exemplo prático estruturado</span>
-                <code>
-                  <b style={{ color: "#ffb461", fontWeight: 600 }}>[Persona]</b>{" "}
-                  Aja como um professor criativo...
-                  <br />
-                  <b style={{ color: "#ffb461", fontWeight: 600 }}>
-                    [Tarefa]
-                  </b>{" "}
-                  Explique o que é a gravidade...
-                  <br />
-                  <b style={{ color: "#ffb461", fontWeight: 600 }}>
-                    [Público]
-                  </b>{" "}
-                  Para uma criança de 10 anos que gosta de espaço...
-                  <br />
-                  <b style={{ color: "#ffb461", fontWeight: 600 }}>
-                    [Formato]
-                  </b>{" "}
-                  Em apenas 1 parágrafo, usando a metáfora de um lençol
-                  esticado.
-                </code>
-              </div>
 
-              <div
-                style={{
-                  marginTop: "20px",
-                  padding: "12px 14px",
-                  borderRadius: "6px",
-                  background: "rgba(255, 173, 85, 0.1)",
-                  borderLeft: "3px solid #ffad55",
-                  color: "#ffd6a5",
-                  fontSize: "12px",
-                  lineHeight: "1.4",
-                }}
-              >
-                <strong>💡 Dica da Arena:</strong> No jogo você não escreve o
-                prompt de forma literal. O seu objetivo é escolher e comprar as
-                cartas que representam os melhores <strong>elementos</strong>{" "}
-                para compor o resultado solicitado!
-              </div>
-            </div>
+              <div className="prompt-explainer" style={{ padding: "20px" }}>
+                <div
+                  className="prompt-explainer-title"
+                  style={{ marginBottom: "12px" }}
+                >
+                  <Sparkles size={14} /> Os Elementos de um Prompt
+                </div>
+                <p>
+                  Para a IA não ter que "adivinhar" o que você quer, forneça as
+                  peças do quebra-cabeça. Veja como transformar um pedido
+                  genérico em uma instrução de alto nível:
+                </p>
+                <div
+                  className="prompt-example"
+                  style={{ marginTop: "16px", marginBottom: "16px" }}
+                >
+                  <span>exemplo prático estruturado</span>
+                  <code>
+                    <b style={{ color: "#ffb461", fontWeight: 600 }}>
+                      [Persona]
+                    </b>{" "}
+                    Aja como um professor criativo...
+                    <br />
+                    <b style={{ color: "#ffb461", fontWeight: 600 }}>
+                      [Tarefa]
+                    </b>{" "}
+                    Explique o que é a gravidade...
+                    <br />
+                    <b style={{ color: "#ffb461", fontWeight: 600 }}>
+                      [Público]
+                    </b>{" "}
+                    Para uma criança de 10 anos que gosta de espaço...
+                    <br />
+                    <b style={{ color: "#ffb461", fontWeight: 600 }}>
+                      [Formato]
+                    </b>{" "}
+                    Em apenas 1 parágrafo, usando a metáfora de um lençol
+                    esticado.
+                  </code>
+                </div>
 
-            <div className="info-divider" style={{ margin: "36px 0" }} />
-
-            <div className="eyebrow" style={{ marginBottom: "16px" }}>
-              <Gavel size={13} /> como funciona o jogo
-            </div>
-            <div className="help-steps">
-              <div className="help-step">
-                <span>01</span>
-                <div>
-                  <strong>Monte sua estratégia</strong>
-                  <small>
-                    Analise o brief da rodada e compre cartas de elementos
-                    (Persona, Contexto, Tom) que melhor resolvem o desafio.
-                  </small>
+                <div
+                  style={{
+                    marginTop: "20px",
+                    padding: "12px 14px",
+                    borderRadius: "6px",
+                    background: "rgba(255, 173, 85, 0.1)",
+                    borderLeft: "3px solid #ffad55",
+                    color: "#ffd6a5",
+                    fontSize: "12px",
+                    lineHeight: "1.4",
+                  }}
+                >
+                  <strong>💡 Dica da Arena:</strong> No jogo você não escreve o
+                  prompt de forma literal. O seu objetivo é escolher e comprar
+                  as cartas que representam os melhores{" "}
+                  <strong>elementos</strong> para compor o resultado solicitado!
                 </div>
               </div>
-              <div className="help-step">
-                <span>02</span>
-                <div>
-                  <strong>Foque na eficiência</strong>
-                  <small>
-                    A qualidade das cartas é oculta. O vencedor não é quem gasta
-                    mais moedas, mas quem gera mais valor pelo menor custo.
-                  </small>
-                </div>
-              </div>
-              <div className="help-step">
-                <span>03</span>
-                <div>
-                  <strong>Descubra sinergias</strong>
-                  <small>
-                    Existem combinações secretas. Juntar as cartas certas (como
-                    a estrutura PITACO) destrava multiplicadores de pontuação!
-                  </small>
-                </div>
-              </div>
-            </div>
 
-            <div className="info-divider" style={{ margin: "32px 0 20px" }} />
-            <small className="help-footer">
-              Cada rodada embaralha tarefas, cartas, preços e sinergias. Jogue,
-              revele e use a reflexão para melhorar seu próximo prompt.
-            </small>
-            <div className="rights-line">
-              Jogo criado pela{" "}
-              <img
-                className="inline-wordmark"
-                src="/LogoSemFundoComBranco.png"
-                alt="TolazzAI"
-              />{" "}
-              para ensinar prompt engineering · Todos os direitos reservados
+              <div className="info-divider" style={{ margin: "36px 0" }} />
+
+              <div className="eyebrow" style={{ marginBottom: "16px" }}>
+                <Gavel size={13} /> como funciona o jogo
+              </div>
+              <div className="help-steps">
+                <div className="help-step">
+                  <span>01</span>
+                  <div>
+                    <strong>Monte sua estratégia</strong>
+                    <small>
+                      Analise o brief da rodada e compre cartas de elementos
+                      (Persona, Contexto, Tom) que melhor resolvem o desafio.
+                    </small>
+                  </div>
+                </div>
+                <div className="help-step">
+                  <span>02</span>
+                  <div>
+                    <strong>Foque na eficiência</strong>
+                    <small>
+                      A qualidade das cartas é oculta. O vencedor não é quem
+                      gasta mais moedas, mas quem gera mais valor pelo menor
+                      custo.
+                    </small>
+                  </div>
+                </div>
+                <div className="help-step">
+                  <span>03</span>
+                  <div>
+                    <strong>Descubra sinergias</strong>
+                    <small>
+                      Existem combinações secretas. Juntar as cartas certas
+                      (como a estrutura PITACO) destrava multiplicadores de
+                      pontuação!
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <div className="info-divider" style={{ margin: "32px 0 20px" }} />
+              <small className="help-footer">
+                Cada rodada embaralha tarefas, cartas, preços e sinergias.
+                Jogue, revele e use a reflexão para melhorar seu próximo prompt.
+              </small>
+              <div className="rights-line">
+                Jogo criado pela{" "}
+                <img
+                  className="inline-wordmark"
+                  src="/LogoSemFundoComBranco.png"
+                  alt="TolazzAI"
+                />{" "}
+                para ensinar prompt engineering · Todos os direitos reservados
+              </div>
             </div>
           </section>
         </div>
