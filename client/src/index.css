@@ -1276,7 +1276,7 @@ button:focus-visible {
 .synergy-reveal {
   display: flex;
   gap: 10px;
-  align-items: center;
+  align-items: flex-start;
   padding: 12px;
   background: rgba(90, 57, 26, 0.2);
   border: 1px solid rgba(255, 166, 74, 0.2);
@@ -1297,6 +1297,8 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 3px;
+  flex: 1;
+  min-width: 0;
 }
 .synergy-reveal > div > span {
   color: #c58d54;

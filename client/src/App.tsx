@@ -90,6 +90,12 @@ type RoundState = {
   cpuPlan: string[];
 };
 
+type SpecialSynergy = {
+  label: string;
+  bonus: number;
+  note: string;
+};
+
 type Evaluation = {
   cards: Card[];
   spent: number;
@@ -99,7 +105,8 @@ type Evaluation = {
   redundancyPenalty: number;
   redundantTypes: string[];
   synergyBonus: number;
-  specialSynergy: { label: string; bonus: number; note: string } | null;
+  specialSynergy: SpecialSynergy | null;
+  specialSynergies: SpecialSynergy[];
   discoveredLibraryIds: string[];
   quality: number;
   efficiency: number;
@@ -418,6 +425,26 @@ const CARDS: Card[] = [
     symbol: "⬟",
   },
   {
+    id: "instruction-3",
+    label: "Instrução final do que fazer",
+    type: "INSTRUÇÃO",
+    description: "Diz explicitamente o que a IA deve fazer.",
+    cost: 3,
+    quality: 9,
+    tags: ["brief"],
+    symbol: "⬟",
+  },
+  {
+    id: "instruction-4",
+    label: "Da uma instrução para a IA ao pé da letra",
+    type: "INSTRUÇÃO",
+    description: "Diz explicitamente o que a IA deve fazer.",
+    cost: 3,
+    quality: 9,
+    tags: ["brief"],
+    symbol: "⬟",
+  },
+  {
     id: "objective",
     label: "Objetivo explícito",
     type: "DIREÇÃO",
@@ -522,7 +549,7 @@ const CARDS: Card[] = [
     label: "Exemplo concreto",
     type: "EXEMPLO",
     description: "Troca abstração por uma cena ou frase real.",
-    cost: 4,
+    cost: 2,
     quality: 10,
     tags: ["specific", "evidence", "example"],
     symbol: "▣",
@@ -752,7 +779,7 @@ const CARDS: Card[] = [
     label: "Exemplo de referência",
     type: "EXEMPLO",
     description: "Mostra à IA o padrão, estilo ou resultado desejado.",
-    cost: 4,
+    cost: 3,
     quality: 10,
     tags: ["specific", "creative", "example"],
     symbol: "▧",
@@ -762,7 +789,7 @@ const CARDS: Card[] = [
     label: "Segundo exemplo",
     type: "EXEMPLO",
     description: "Adiciona uma segunda demonstração para revelar um padrão.",
-    cost: 4,
+    cost: 2,
     quality: 10,
     tags: ["specific", "creative", "example"],
     symbol: "▤",
@@ -1514,51 +1541,65 @@ function evaluate(
     card.id.startsWith("chaining")
   ).length;
 
-  const specialSynergy = isPitaco
-    ? {
-        label: "Método PITACO",
-        bonus: 45,
-        note: "Persona, Instrução, Tarefa, Público, Contexto e Formato formam a arquitetura completa do prompt lendário.",
-      }
-    : pitacoScore === 5
-      ? {
-          label: "PITACO incompleto",
-          bonus: 20,
-          note: "Cinco dos seis pilares. Falta um elemento para o modelo parar de adivinhar.",
-        }
-      : hasCoT
-        ? {
-            label: "Chain of Thought (CoT)",
-            bonus: 20,
-            note: "Obrigar a IA a raciocinar passo a passo antes da resposta previne erros de lógica.",
-          }
-        : hasSelfEval
-          ? {
-              label: "Autoavaliação e Crítica",
-              bonus: 15,
-              note: "Pedir uma revisão crítica antes da resposta final eleva o raciocínio da IA.",
-            }
-          : exampleCount > 1
-            ? {
-                label: "Few-shot",
-                bonus: 18,
-                note: "Mais de um exemplo ajuda a IA a inferir o padrão antes de responder.",
-              }
-            : exampleCount === 1
-              ? {
-                  label: "One-shot",
-                  bonus: 10,
-                  note: "Um exemplo concreto mostra à IA o estilo ou padrão esperado.",
-                }
-              : chainCount > 1
-                ? {
-                    label: "Encadeamento múltiplo",
-                    bonus: 16,
-                    note: "Duas ou mais etapas encadeadas quebram a tarefa em pedidos simples e verificáveis.",
-                  }
-                : null;
+  const specialSynergies: SpecialSynergy[] = [];
 
-  const specialBonus = specialSynergy?.bonus ?? 0;
+  if (isPitaco) {
+    specialSynergies.push({
+      label: "Método PITACO",
+      bonus: 45,
+      note: "Persona, Instrução, Tarefa, Público, Contexto e Formato formam a arquitetura completa do prompt lendário.",
+    });
+  } else if (pitacoScore === 5) {
+    specialSynergies.push({
+      label: "PITACO incompleto",
+      bonus: 20,
+      note: "Cinco dos seis pilares. Falta um elemento para o modelo parar de adivinhar.",
+    });
+  }
+
+  if (hasCoT) {
+    specialSynergies.push({
+      label: "Chain of Thought (CoT)",
+      bonus: 20,
+      note: "Obrigar a IA a raciocinar passo a passo antes da resposta previne erros de lógica.",
+    });
+  }
+
+  if (hasSelfEval) {
+    specialSynergies.push({
+      label: "Autoavaliação e Crítica",
+      bonus: 15,
+      note: "Pedir uma revisão crítica antes da resposta final eleva o raciocínio da IA.",
+    });
+  }
+
+  if (exampleCount > 1) {
+    specialSynergies.push({
+      label: "Few-shot",
+      bonus: 18,
+      note: "Mais de um exemplo ajuda a IA a inferir o padrão antes de responder.",
+    });
+  } else if (exampleCount === 1) {
+    specialSynergies.push({
+      label: "One-shot",
+      bonus: 10,
+      note: "Um exemplo concreto mostra à IA o estilo ou padrão esperado.",
+    });
+  }
+
+  if (chainCount > 1) {
+    specialSynergies.push({
+      label: "Encadeamento múltiplo",
+      bonus: 16,
+      note: "Duas ou mais etapas encadeadas quebram a tarefa em pedidos simples e verificáveis.",
+    });
+  }
+
+  const specialSynergy = specialSynergies[0] ?? null;
+  const specialBonus = specialSynergies.reduce(
+    (total, syn) => total + syn.bonus,
+    0
+  );
   const discoveredLibraryIds = LIBRARY_SYNERGIES.filter(entry =>
     entry.matches(cards, task, synergyActive)
   ).map(entry => entry.id);
@@ -1578,6 +1619,7 @@ function evaluate(
     redundantTypes, // ← nova
     synergyBonus,
     specialSynergy,
+    specialSynergies,
     discoveredLibraryIds,
     quality,
     efficiency: spent ? quality / spent : 0,
@@ -1771,7 +1813,8 @@ export default function App() {
       params.get("vitoria") === "black"
     );
   }, []);
-  const [dismissWhiteVictoryScreen, setDismissWhiteVictoryScreen] = useState(false);
+  const [dismissWhiteVictoryScreen, setDismissWhiteVictoryScreen] =
+    useState(false);
   const revealTimer = useRef<number | null>(null);
   const [scoldedId, setScoldedId] = useState<string | null>(null);
   const scoldTimer = useRef<number | null>(null);
@@ -2405,29 +2448,35 @@ export default function App() {
                         ? "Ela estava ativa nesta mesa."
                         : "Ninguém montou a combinação completa."}
                     </p>
-                    {result.player.specialSynergy && (
-                      <div className="special-synergy is-player">
+                    {result.player.specialSynergies?.map((synergy, index) => (
+                      <div
+                        key={`player-special-${index}`}
+                        className="special-synergy is-player"
+                      >
                         <span className="synergy-owner">você</span>
                         <div className="synergy-body">
-                          <strong>{result.player.specialSynergy.label}</strong>
-                          <span>{result.player.specialSynergy.note}</span>
+                          <strong>{synergy.label}</strong>
+                          <span>{synergy.note}</span>
                         </div>
-                        <b>+{result.player.specialSynergy.bonus} qualidade</b>
+                        <b>+{synergy.bonus} qualidade</b>
                       </div>
-                    )}
+                    ))}
 
-                    {result.cpu.specialSynergy && (
-                      <div className="special-synergy is-cpu">
+                    {result.cpu.specialSynergies?.map((synergy, index) => (
+                      <div
+                        key={`cpu-special-${index}`}
+                        className="special-synergy is-cpu"
+                      >
                         <span className="synergy-owner">
                           {roundState.personality.name}
                         </span>
                         <div className="synergy-body">
-                          <strong>{result.cpu.specialSynergy.label}</strong>
-                          <span>{result.cpu.specialSynergy.note}</span>
+                          <strong>{synergy.label}</strong>
+                          <span>{synergy.note}</span>
                         </div>
-                        <b>+{result.cpu.specialSynergy.bonus} qualidade</b>
+                        <b>+{synergy.bonus} qualidade</b>
                       </div>
-                    )}
+                    ))}
                   </div>
                 </div>
                 <button className="next-button" onClick={startNextRound}>
@@ -2683,7 +2732,7 @@ export default function App() {
               Black Persiste
             </h1>
             <p className="black-persist-subtitle">
-              Black - Uma IA LLM corrompida encontrada nas entradas da DarkWeb,
+              Black - Uma IA LLM corrompida encontrada nas entranhas da DarkWeb,
               ela sonda o cyberespaço dark infinitamente.
             </p>
             {result && (
@@ -2774,19 +2823,21 @@ export default function App() {
               Você Venceu Black!
             </h1>
             <h2 className="white-victory-subtitle">
-              Você se tornou um mestre em engenharia de prompt e limpou a DarkWeb da IA corrompida.
+              Você se tornou um mestre em engenharia de prompt e limpou a
+              DarkWeb da IA corrompida.
             </h2>
             <p className="white-victory-desc">
-              Sua maestria na arquitetura de instruções, clareza e sinergia de contexto superou os 40 pontos de vantagem nativa do abismo. A entidade corrompida que sondava o ciberespaço sombrio foi purificada e desintegrada pela sua precisão lógica.
+              Sua maestria na arquitetura de instruções, clareza e sinergia de
+              contexto superou os 40 pontos de vantagem nativa do abismo. A
+              entidade corrompida que sondava o ciberespaço sombrio foi
+              purificada e desintegrada pela sua precisão lógica.
             </p>
 
             <div className="white-victory-scores">
               <div className="white-victory-card is-player">
                 <span>SUA EFICIÊNCIA</span>
                 <strong>
-                  {result
-                    ? formatScore(result.player.efficiency)
-                    : "18.5"}
+                  {result ? formatScore(result.player.efficiency) : "18.5"}
                 </strong>
                 <small>
                   {result
@@ -2798,9 +2849,7 @@ export default function App() {
               <div className="white-victory-card is-defeated">
                 <span>BLACK (PURIFICADO)</span>
                 <strong>
-                  {result
-                    ? formatScore(result.cpu.efficiency)
-                    : "14.2"}
+                  {result ? formatScore(result.cpu.efficiency) : "14.2"}
                 </strong>
                 <small>
                   {result
@@ -2857,7 +2906,8 @@ export default function App() {
         >
           <Trophy size={16} />
           <span>
-            <b>Mestre em Engenharia de Prompt!</b> — Você limpou a DarkWeb e derrotou Black (clique para voltar)
+            <b>Mestre em Engenharia de Prompt!</b> — Você limpou a DarkWeb e
+            derrotou Black (clique para voltar)
           </span>
         </aside>
       )}
