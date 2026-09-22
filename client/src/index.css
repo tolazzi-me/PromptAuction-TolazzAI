@@ -2580,7 +2580,8 @@ button:focus-visible {
   }
 }
 
-/* ===== BOTÃO DESAFIO BLACK (ABAIXO DA BIBLIOTECA DE SINERGIAS) ===== */
+/* ===== BOTÃO DESAFIO SKULL (ABAIXO DA BIBLIOTECA DE SINERGIAS) ===== */
+.skull-challenge-btn,
 .black-challenge-btn {
   position: relative;
   display: flex;
@@ -2606,6 +2607,7 @@ button:focus-visible {
     border-color 0.18s ease,
     filter 0.18s ease;
 }
+.skull-challenge-btn::before,
 .black-challenge-btn::before {
   content: "";
   position: absolute;
@@ -2617,9 +2619,10 @@ button:focus-visible {
     rgba(255, 255, 255, 0.08),
     transparent
   );
-  animation: black-shimmer 3.5s ease-in-out infinite;
+  animation: skull-shimmer 3.5s ease-in-out infinite;
   pointer-events: none;
 }
+.skull-challenge-btn:hover,
 .black-challenge-btn:hover {
   filter: brightness(1.15);
   transform: translateY(-2px);
@@ -2628,9 +2631,11 @@ button:focus-visible {
     0 16px 36px rgba(0, 0, 0, 0.75),
     0 0 20px rgba(255, 255, 255, 0.08);
 }
+.skull-challenge-btn:active,
 .black-challenge-btn:active {
   transform: scale(0.97);
 }
+.skull-challenge-btn.is-active,
 .black-challenge-btn.is-active {
   border-color: rgba(244, 63, 94, 0.65);
   background: linear-gradient(145deg, #1c0e13, #0c0507);
@@ -2638,6 +2643,7 @@ button:focus-visible {
     0 12px 30px rgba(0, 0, 0, 0.65),
     0 0 20px rgba(244, 63, 94, 0.22);
 }
+.skull-challenge-icon,
 .black-challenge-icon {
   width: 32px;
   height: 32px;
@@ -2651,6 +2657,7 @@ button:focus-visible {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
   animation: skull-breath 2.6s ease-in-out infinite;
 }
+.skull-challenge-copy,
 .black-challenge-copy {
   min-width: 0;
   flex: 1;
@@ -2658,11 +2665,13 @@ button:focus-visible {
   flex-direction: column;
   gap: 2px;
 }
+.skull-challenge-heading,
 .black-challenge-heading {
   display: flex;
   align-items: center;
   gap: 6px;
 }
+.skull-challenge-heading strong,
 .black-challenge-heading strong {
   color: #fafafa;
   font:
@@ -2671,6 +2680,7 @@ button:focus-visible {
     sans-serif;
   letter-spacing: 0.01em;
 }
+.skull-challenge-tag,
 .black-challenge-tag {
   font:
     700 7px/1 "DM Mono",
@@ -2683,6 +2693,7 @@ button:focus-visible {
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+.skull-challenge-copy small,
 .black-challenge-copy small {
   color: rgba(228, 228, 231, 0.65);
   font:
@@ -2690,6 +2701,7 @@ button:focus-visible {
     monospace;
   line-height: 1.2;
 }
+.skull-challenge-swords,
 .black-challenge-swords {
   color: rgba(255, 255, 255, 0.45);
   flex: none;
@@ -2697,9 +2709,21 @@ button:focus-visible {
     transform 0.2s ease,
     color 0.2s ease;
 }
+.skull-challenge-btn:hover .skull-challenge-swords,
 .black-challenge-btn:hover .black-challenge-swords {
   color: #fda4af;
   transform: scale(1.15) rotate(15deg);
+}
+@keyframes skull-shimmer {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translateX(-100%);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(100%);
+  }
 }
 @keyframes black-shimmer {
   0%,
@@ -2724,7 +2748,8 @@ button:focus-visible {
   }
 }
 
-/* ===== BLACK BOSS — vitória na rodada ===== */
+/* ===== SKULL BOSS — vitória na rodada ===== */
+.reveal-side.skull-rage,
 .reveal-side.black-rage {
   position: relative;
   border-color: rgba(180, 180, 190, 0.6);
@@ -2737,22 +2762,41 @@ button:focus-visible {
     inset 0 0 45px rgba(0, 0, 0, 0.95),
     0 0 32px rgba(0, 0, 0, 0.8),
     0 0 0 1px rgba(255, 255, 255, 0.12);
-  animation: black-pulse 2.2s ease-in-out infinite;
+  animation: skull-pulse 2.2s ease-in-out infinite;
   overflow: visible;
 }
+.reveal-side.skull-rage .reveal-side-head b,
 .reveal-side.black-rage .reveal-side-head b,
+.reveal-side.skull-rage .revealed-value strong,
 .reveal-side.black-rage .revealed-value strong,
+.reveal-side.skull-rage .reveal-math b,
 .reveal-side.black-rage .reveal-math b {
   color: #fda4af;
 }
+.reveal-side.skull-rage .reveal-card-symbol,
 .reveal-side.black-rage .reveal-card-symbol {
   color: #ffffff;
   background: rgba(40, 40, 50, 0.7);
 }
+.reveal-side.skull-rage .reveal-card,
 .reveal-side.black-rage .reveal-card {
   border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
+@keyframes skull-pulse {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 40px rgba(0, 0, 0, 0.95),
+      0 0 20px rgba(0, 0, 0, 0.7);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 60px rgba(244, 63, 94, 0.15),
+      0 0 35px rgba(0, 0, 0, 0.9),
+      0 0 0 1px rgba(244, 63, 94, 0.35);
+  }
+}
 @keyframes black-pulse {
   0%,
   100% {
@@ -2768,6 +2812,7 @@ button:focus-visible {
   }
 }
 
+.skull-taunt,
 .black-taunt {
   position: absolute;
   top: -17px;
@@ -2793,10 +2838,12 @@ button:focus-visible {
     taunt-in 0.35s cubic-bezier(0.2, 1.5, 0.4, 1) both,
     taunt-shake 2.6s ease-in-out 0.4s infinite;
 }
+.skull-taunt svg,
 .black-taunt svg {
   color: #f43f5e;
   flex: none;
 }
+.skull-taunt::after,
 .black-taunt::after {
   content: "";
   position: absolute;
@@ -2810,6 +2857,7 @@ button:focus-visible {
   transform: rotate(45deg);
 }
 
+.winner-stamp.skull,
 .winner-stamp.black {
   background: linear-gradient(135deg, #27272a, #09090b);
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -2817,7 +2865,8 @@ button:focus-visible {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
 }
 
-/* ===== TELA DE ESCURECIMENTO TOTAL: BLACK PERSISTE ===== */
+/* ===== TELA DE ESCURECIMENTO TOTAL: SKULL PERSISTE ===== */
+.skull-persist-screen,
 .black-persist-screen {
   position: fixed;
   inset: 0;
@@ -2826,11 +2875,12 @@ button:focus-visible {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  animation: black-fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: skull-fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   pointer-events: auto;
   user-select: none;
 }
 
+.skull-persist-backdrop,
 .black-persist-backdrop {
   position: absolute;
   inset: 0;
@@ -2838,6 +2888,7 @@ button:focus-visible {
   opacity: 0.985;
 }
 
+.skull-persist-vignette,
 .black-persist-vignette {
   position: absolute;
   inset: 0;
@@ -2849,6 +2900,7 @@ button:focus-visible {
   pointer-events: none;
 }
 
+.skull-persist-particles,
 .black-persist-particles {
   position: absolute;
   inset: 0;
@@ -2856,6 +2908,7 @@ button:focus-visible {
   pointer-events: none;
 }
 
+.skull-persist-particles span,
 .black-persist-particles span {
   position: absolute;
   border-radius: 50%;
@@ -2868,6 +2921,7 @@ button:focus-visible {
   animation: float-abyss 7s ease-in-out infinite;
 }
 
+.skull-persist-particles span:nth-child(1),
 .black-persist-particles span:nth-child(1) {
   width: 280px;
   height: 280px;
@@ -2875,6 +2929,7 @@ button:focus-visible {
   left: 10%;
   animation-delay: 0s;
 }
+.skull-persist-particles span:nth-child(2),
 .black-persist-particles span:nth-child(2) {
   width: 340px;
   height: 340px;
@@ -2882,6 +2937,7 @@ button:focus-visible {
   right: 8%;
   animation-delay: -2s;
 }
+.skull-persist-particles span:nth-child(3),
 .black-persist-particles span:nth-child(3) {
   width: 190px;
   height: 190px;
@@ -2889,6 +2945,7 @@ button:focus-visible {
   left: 65%;
   animation-delay: -4s;
 }
+.skull-persist-particles span:nth-child(4),
 .black-persist-particles span:nth-child(4) {
   width: 230px;
   height: 230px;
@@ -2896,6 +2953,7 @@ button:focus-visible {
   right: 20%;
   animation-delay: -1s;
 }
+.skull-persist-particles span:nth-child(5),
 .black-persist-particles span:nth-child(5) {
   width: 160px;
   height: 160px;
@@ -2904,18 +2962,7 @@ button:focus-visible {
   animation-delay: -3.5s;
 }
 
-@keyframes float-abyss {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 0.2;
-  }
-  50% {
-    transform: translateY(-25px) scale(1.1);
-    opacity: 0.45;
-  }
-}
-
+.skull-persist-content,
 .black-persist-content {
   position: relative;
   z-index: 2;
@@ -2925,9 +2972,10 @@ button:focus-visible {
   text-align: center;
   max-width: 580px;
   width: 100%;
-  animation: black-content-in 0.8s cubic-bezier(0.2, 0.9, 0.3, 1) 0.1s both;
+  animation: skull-content-in 0.8s cubic-bezier(0.2, 0.9, 0.3, 1) 0.1s both;
 }
 
+.skull-persist-glitch,
 .black-persist-glitch {
   display: grid;
   place-items: center;
@@ -2944,6 +2992,7 @@ button:focus-visible {
   animation: skull-breath 2.4s ease-in-out infinite;
 }
 
+.skull-persist-badge,
 .black-persist-badge {
   display: inline-flex;
   align-items: center;
@@ -2961,6 +3010,7 @@ button:focus-visible {
   text-transform: uppercase;
 }
 
+.skull-persist-title,
 .black-persist-title {
   margin: 0 0 12px;
   font-family: "DM Mono", "Arial Narrow", monospace;
@@ -2977,20 +3027,7 @@ button:focus-visible {
   animation: title-glow 3s ease-in-out infinite;
 }
 
-@keyframes title-glow {
-  0%,
-  100% {
-    text-shadow:
-      0 0 20px rgba(255, 255, 255, 0.35),
-      0 0 50px rgba(244, 63, 94, 0.35);
-  }
-  50% {
-    text-shadow:
-      0 0 30px rgba(255, 255, 255, 0.6),
-      0 0 70px rgba(244, 63, 94, 0.65);
-  }
-}
-
+.skull-persist-subtitle,
 .black-persist-subtitle {
   margin: 0 0 26px;
   max-width: 480px;
@@ -2999,6 +3036,7 @@ button:focus-visible {
   line-height: 1.6;
 }
 
+.skull-persist-scores,
 .black-persist-scores {
   display: flex;
   align-items: center;
@@ -3008,6 +3046,7 @@ button:focus-visible {
   margin-bottom: 28px;
 }
 
+.skull-persist-card,
 .black-persist-card {
   flex: 1;
   max-width: 180px;
@@ -3020,6 +3059,7 @@ button:focus-visible {
   gap: 4px;
 }
 
+.skull-persist-card span,
 .black-persist-card span {
   font:
     700 9px "DM Mono",
@@ -3029,32 +3069,41 @@ button:focus-visible {
   color: rgba(255, 255, 255, 0.6);
 }
 
+.skull-persist-card strong,
 .black-persist-card strong {
   font-size: 26px;
   font-family: "DM Mono", monospace;
   color: #fafafa;
 }
 
+.skull-persist-card small,
 .black-persist-card small {
   font-size: 10px;
   font-family: "DM Mono", monospace;
   color: rgba(255, 255, 255, 0.4);
 }
 
+.skull-persist-card.is-skull,
+.skull-persist-card.is-black,
 .black-persist-card.is-black {
   background: rgba(244, 63, 94, 0.09);
   border-color: rgba(244, 63, 94, 0.45);
   box-shadow: 0 0 22px rgba(244, 63, 94, 0.18);
 }
 
+.skull-persist-card.is-skull span,
+.skull-persist-card.is-black span,
 .black-persist-card.is-black span {
   color: #fda4af;
 }
 
+.skull-persist-card.is-skull strong,
+.skull-persist-card.is-black strong,
 .black-persist-card.is-black strong {
   color: #f43f5e;
 }
 
+.skull-persist-divider,
 .black-persist-divider {
   font:
     800 14px "DM Mono",
@@ -3062,6 +3111,7 @@ button:focus-visible {
   color: rgba(255, 255, 255, 0.25);
 }
 
+.skull-persist-actions,
 .black-persist-actions {
   display: flex;
   align-items: center;
@@ -3070,6 +3120,7 @@ button:focus-visible {
   gap: 12px;
 }
 
+.skull-persist-btn,
 .black-persist-btn {
   display: inline-flex;
   align-items: center;
@@ -3086,10 +3137,12 @@ button:focus-visible {
     background 0.18s ease;
 }
 
+.skull-persist-btn:active,
 .black-persist-btn:active {
   transform: scale(0.96);
 }
 
+.skull-persist-btn.primary,
 .black-persist-btn.primary {
   background: #ffffff;
   color: #09090b;
@@ -3097,33 +3150,46 @@ button:focus-visible {
   box-shadow: 0 4px 18px rgba(255, 255, 255, 0.25);
 }
 
+.skull-persist-btn.primary:hover,
 .black-persist-btn.primary:hover {
   filter: brightness(0.9);
   transform: translateY(-2px);
 }
 
+.skull-persist-btn.secondary,
 .black-persist-btn.secondary {
   background: rgba(244, 63, 94, 0.15);
   border: 1px solid rgba(244, 63, 94, 0.45);
   color: #fda4af;
 }
 
+.skull-persist-btn.secondary:hover,
 .black-persist-btn.secondary:hover {
   background: rgba(244, 63, 94, 0.25);
   transform: translateY(-2px);
 }
 
+.skull-persist-btn.ghost,
 .black-persist-btn.ghost {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.7);
 }
 
+.skull-persist-btn.ghost:hover,
 .black-persist-btn.ghost:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
 }
 
+@keyframes skull-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 @keyframes black-fade-in {
   from {
     opacity: 0;
@@ -3133,6 +3199,16 @@ button:focus-visible {
   }
 }
 
+@keyframes skull-content-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
 @keyframes black-content-in {
   from {
     opacity: 0;
@@ -3145,6 +3221,7 @@ button:focus-visible {
 }
 
 /* Banner de quando a tela é minimizada para olhar o tabuleiro */
+.skull-dismissed-banner,
 .black-dismissed-banner {
   position: fixed;
   top: 14px;
@@ -3170,11 +3247,13 @@ button:focus-visible {
   animation: banner-drop 0.3s ease-out;
 }
 
+.skull-dismissed-banner:hover,
 .black-dismissed-banner:hover {
   background: #18181b;
   border-color: #f43f5e;
 }
 
+.skull-dismissed-banner svg,
 .black-dismissed-banner svg {
   color: #f43f5e;
 }

@@ -1068,8 +1068,8 @@ const PERSONALITIES: Personality[] = [
   },
 ];
 
-const BLACK_PERSONALITY: Personality = {
-  name: "Black",
+const SKULL_PERSONALITY: Personality = {
+  name: "Skull",
   title: "ANOMALIA",
   detail:
     "Uma força insondável com 40 pontos de vantagem nativa em cada rodada.",
@@ -1386,7 +1386,7 @@ function chooseCpu(
     if (
       personality.title === "estrategista" ||
       personality.title === "BOSS" ||
-      personality.name === "Black"
+      personality.name === "Skull"
     )
       return (
         bFocus * 4 + bSyn * 5 + b.quality - (aFocus * 4 + aSyn * 5 + a.quality)
@@ -1400,7 +1400,7 @@ function chooseCpu(
       ? 4
       : personality.title === "estrategista" ||
           personality.title === "BOSS" ||
-          personality.name === "Black"
+          personality.name === "Skull"
         ? 3
         : 2;
   const chaotic = personality.title === "caótica";
@@ -1802,14 +1802,18 @@ export default function App() {
       return false;
     }
   });
-  const [dismissBlackScreen, setDismissBlackScreen] = useState(false);
-  const isTestWinBlack = useMemo(() => {
+  const [dismissSkullScreen, setDismissSkullScreen] = useState(false);
+  const isTestWinSkull = useMemo(() => {
     if (typeof window === "undefined") return false;
     const params = new URLSearchParams(window.location.search);
     return (
+      params.get("win_skull") === "true" ||
+      params.get("winskull") === "true" ||
+      params.get("skull") === "win" ||
       params.get("win_black") === "true" ||
       params.get("winblack") === "true" ||
       params.get("black") === "win" ||
+      params.get("vitoria") === "skull" ||
       params.get("vitoria") === "black"
     );
   }, []);
@@ -1872,8 +1876,8 @@ export default function App() {
         roundState.synergy
       );
       const cpuEval = evaluate(cpuCards, roundState.task, roundState.synergy);
-      // Bônus roubado da CPU: Black (+40) ou BOSS (+20)
-      if (roundState.personality.name === "Black") {
+      // Bônus roubado da CPU: Skull (+40) ou BOSS (+20)
+      if (roundState.personality.name === "Skull") {
         cpuEval.quality += 40;
         cpuEval.efficiency = cpuEval.spent
           ? cpuEval.quality / cpuEval.spent
@@ -1897,7 +1901,7 @@ export default function App() {
         winner,
         synergy: roundState.synergy,
       });
-      setDismissBlackScreen(false);
+      setDismissSkullScreen(false);
       setDismissWhiteVictoryScreen(false);
       const newlyDiscovered = playerEval.discoveredLibraryIds;
       if (newlyDiscovered.length)
@@ -1922,12 +1926,12 @@ export default function App() {
       setPhase("result");
       setNotice(
         winner === "player"
-          ? roundState.personality.name === "Black"
-            ? "Triunfo lendário! Você superou os 40 pontos de vantagem de Black!"
+          ? roundState.personality.name === "Skull"
+            ? "Triunfo lendário! Você superou os 40 pontos de vantagem de Skull!"
             : "Sua eficiência encontrou o ponto certo."
           : winner === "cpu"
-            ? roundState.personality.name === "Black"
-              ? "Black venceu a rodada com sua vantagem insondável (+40)."
+            ? roundState.personality.name === "Skull"
+              ? "Skull venceu a rodada com sua vantagem insondável (+40)."
               : "A CPU levou essa pela relação valor/moeda."
             : "Empate técnico — a eficiência ficou colada."
       );
@@ -2018,7 +2022,7 @@ export default function App() {
       MAX_WALLET,
       roundState.cpuBudget - result.cpu.spent + 10
     );
-    const isVersusBlack = roundState.personality.name === "Black";
+    const isVersusSkull = roundState.personality.name === "Skull";
     setRoundState(
       buildRound(
         roundState.round + 1,
@@ -2026,17 +2030,17 @@ export default function App() {
         nextCpuBudget,
         roundState.task.id,
         roundState.market.map(card => card.id),
-        isVersusBlack ? BLACK_PERSONALITY : undefined
+        isVersusSkull ? SKULL_PERSONALITY : undefined
       )
     );
     setSelectedIds([]);
     setResult(null);
     setPhase("auction");
-    setDismissBlackScreen(false);
+    setDismissSkullScreen(false);
     setDismissWhiteVictoryScreen(false);
     setNotice(
-      isVersusBlack
-        ? "Novo mercado contra Black. O abismo ainda tem +40 de vantagem."
+      isVersusSkull
+        ? "Novo mercado contra Skull. O abismo ainda tem +40 de vantagem."
         : "Novo mercado, nova combinação. Nenhuma carta revela tudo de primeira."
     );
   };
@@ -2047,7 +2051,7 @@ export default function App() {
     setResult(null);
     setScore({ player: 0, cpu: 0 });
     setPhase("auction");
-    setDismissBlackScreen(false);
+    setDismissSkullScreen(false);
     setDismissWhiteVictoryScreen(false);
     setNotice(
       "Nova partida iniciada. O melhor prompt nem sempre é o mais caro."
@@ -2055,28 +2059,28 @@ export default function App() {
     demoRound.current = 0;
   };
 
-  const fightBlack = () => {
+  const fightSkull = () => {
     if (phase === "thinking") return;
-    setDismissBlackScreen(false);
+    setDismissSkullScreen(false);
     setDismissWhiteVictoryScreen(false);
-    setRoundState(buildRound(1, 25, 25, "", [], BLACK_PERSONALITY));
+    setRoundState(buildRound(1, 25, 25, "", [], SKULL_PERSONALITY));
     setSelectedIds([]);
     setResult(null);
     setScore({ player: 0, cpu: 0 });
     setPhase("auction");
     setNotice(
-      "Você desafiou Black. Ele possui 40 pontos de vantagem nativa em cada rodada."
+      "Você desafiou Skull. Ele possui 40 pontos de vantagem nativa em cada rodada."
     );
   };
 
   const winnerLabel =
     result?.winner === "player"
-      ? roundState.personality.name === "Black"
-        ? "Você derrotou Black!"
+      ? roundState.personality.name === "Skull"
+        ? "Você derrotou Skull!"
         : "Você venceu a rodada"
       : result?.winner === "cpu"
-        ? roundState.personality.name === "Black"
-          ? "Black venceu a rodada"
+        ? roundState.personality.name === "Skull"
+          ? "Skull venceu a rodada"
           : "A CPU venceu a rodada"
         : "Empate técnico";
   const phaseLabel =
@@ -2091,14 +2095,14 @@ export default function App() {
   const CpuIcon = roundState.personality.icon;
   const aresWins =
     result?.winner === "cpu" && roundState.personality.name === "Ares";
-  const blackWins =
-    result?.winner === "cpu" && roundState.personality.name === "Black";
-  const playerWinsAgainstBlack =
-    (result?.winner === "player" && roundState.personality.name === "Black") ||
+  const skullWins =
+    result?.winner === "cpu" && roundState.personality.name === "Skull";
+  const playerWinsAgainstSkull =
+    (result?.winner === "player" && roundState.personality.name === "Skull") ||
     (phase === "gameover" &&
-      roundState.personality.name === "Black" &&
+      roundState.personality.name === "Skull" &&
       score.player > score.cpu) ||
-    isTestWinBlack;
+    isTestWinSkull;
 
   return (
     <div className="game-shell">
@@ -2326,7 +2330,7 @@ export default function App() {
                   </div>
                   <div
                     className={`winner-stamp ${result.winner} ${
-                      aresWins ? "ares" : blackWins ? "black" : ""
+                      aresWins ? "ares" : skullWins ? "skull" : ""
                     }`}
                   >
                     <Trophy size={18} />
@@ -2368,11 +2372,11 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* ---------- LADO DA CPU / ARES / BLACK ---------- */}
+                  {/* ---------- LADO DA CPU / ARES / SKULL ---------- */}
                   <div
                     className={`reveal-side ${result.winner === "cpu" ? "winner-side" : ""} ${
                       aresWins ? "ares-rage" : ""
-                    } ${blackWins ? "black-rage" : ""}`}
+                    } ${skullWins ? "skull-rage" : ""}`}
                   >
                     {aresWins && (
                       <div className="ares-taunt">
@@ -2380,10 +2384,10 @@ export default function App() {
                         <span>Haha, desista</span>
                       </div>
                     )}
-                    {blackWins && (
-                      <div className="black-taunt">
+                    {skullWins && (
+                      <div className="skull-taunt">
                         <Skull size={13} />
-                        <span>Black Persiste</span>
+                        <span>Skull Persiste</span>
                       </div>
                     )}
                     <div className="reveal-side-head">
@@ -2572,33 +2576,33 @@ export default function App() {
 
             {hasDefeatedAres && (
               <button
-                className={`black-challenge-btn ${
-                  roundState.personality.name === "Black" ? "is-active" : ""
+                className={`skull-challenge-btn ${
+                  roundState.personality.name === "Skull" ? "is-active" : ""
                 }`}
-                title="Desafiar a entidade Black (+40 de vantagem)"
-                aria-label="Desafiar Black"
-                onClick={fightBlack}
+                title="Desafiar a entidade Skull (+40 de vantagem)"
+                aria-label="Desafiar Skull"
+                onClick={fightSkull}
                 disabled={phase === "thinking"}
               >
-                <span className="black-challenge-icon">
+                <span className="skull-challenge-icon">
                   <Skull size={18} />
                 </span>
-                <span className="black-challenge-copy">
-                  <span className="black-challenge-heading">
+                <span className="skull-challenge-copy">
+                  <span className="skull-challenge-heading">
                     <strong>
-                      {roundState.personality.name === "Black"
-                        ? "Em duelo com Black"
-                        : "Lutar com Black"}
+                      {roundState.personality.name === "Skull"
+                        ? "Em duelo com Skull"
+                        : "Lutar com Skull"}
                     </strong>
-                    <span className="black-challenge-tag">+40 VANTAGEM</span>
+                    <span className="skull-challenge-tag">+40 VANTAGEM</span>
                   </span>
                   <small>
-                    {roundState.personality.name === "Black"
+                    {roundState.personality.name === "Skull"
                       ? "Batalha ativa contra o Abismo"
                       : "Oponente secreto desbloqueado"}
                   </small>
                 </span>
-                <Swords size={16} className="black-challenge-swords" />
+                <Swords size={16} className="skull-challenge-swords" />
               </button>
             )}
 
@@ -2606,12 +2610,12 @@ export default function App() {
               <div className="cpu-head">
                 <div
                   className={`cpu-avatar ${
-                    roundState.personality.name === "Black"
-                      ? "black-avatar"
+                    roundState.personality.name === "Skull"
+                      ? "skull-avatar"
                       : ""
                   }`}
                   style={
-                    roundState.personality.name === "Black"
+                    roundState.personality.name === "Skull"
                       ? {
                           background: "#08080a",
                           color: "#ffffff",
@@ -2624,7 +2628,7 @@ export default function App() {
                         : {}
                   }
                 >
-                  {roundState.personality.name === "Black" ? (
+                  {roundState.personality.name === "Skull" ? (
                     <Skull size={16} />
                   ) : roundState.personality.title === "BOSS" ? (
                     <Flame size={16} />
@@ -2709,46 +2713,46 @@ export default function App() {
           </div>
         )}
       </main>
-      {blackWins && !dismissBlackScreen && (
+      {skullWins && !dismissSkullScreen && (
         <div
-          className="black-persist-screen"
+          className="skull-persist-screen"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="black-persist-title"
+          aria-labelledby="skull-persist-title"
         >
-          <div className="black-persist-backdrop" />
-          <div className="black-persist-vignette" />
-          <div className="black-persist-particles" aria-hidden="true">
+          <div className="skull-persist-backdrop" />
+          <div className="skull-persist-vignette" />
+          <div className="skull-persist-particles" aria-hidden="true">
             <span />
             <span />
             <span />
             <span />
             <span />
           </div>
-          <div className="black-persist-content">
-            <div className="black-persist-glitch" aria-hidden="true">
+          <div className="skull-persist-content">
+            <div className="skull-persist-glitch" aria-hidden="true">
               <Skull size={44} strokeWidth={1.7} />
             </div>
-            <div className="black-persist-badge">ANOMALIA · +40 VANTAGEM</div>
-            <h1 id="black-persist-title" className="black-persist-title">
-              Black Persiste
+            <div className="skull-persist-badge">ANOMALIA · +40 VANTAGEM</div>
+            <h1 id="skull-persist-title" className="skull-persist-title">
+              Skull Persiste
             </h1>
-            <p className="black-persist-subtitle">
-              Black - Uma IA LLM corrompida encontrada nas entranhas da DarkWeb,
+            <p className="skull-persist-subtitle">
+              Skull - Uma IA LLM corrompida encontrada nas entranhas da DarkWeb,
               ela sonda o cyberespaço dark infinitamente.
             </p>
             {result && (
-              <div className="black-persist-scores">
-                <div className="black-persist-card">
+              <div className="skull-persist-scores">
+                <div className="skull-persist-card">
                   <span>SEU SCORE</span>
                   <strong>{formatScore(result.player.efficiency)}</strong>
                   <small>
                     qualidade {result.player.quality} ÷ {result.player.spent}
                   </small>
                 </div>
-                <div className="black-persist-divider">VS</div>
-                <div className="black-persist-card is-black">
-                  <span>BLACK (+40)</span>
+                <div className="skull-persist-divider">VS</div>
+                <div className="skull-persist-card is-skull">
+                  <span>SKULL (+40)</span>
                   <strong>{formatScore(result.cpu.efficiency)}</strong>
                   <small>
                     qualidade {result.cpu.quality} ÷ {result.cpu.spent}
@@ -2756,24 +2760,24 @@ export default function App() {
                 </div>
               </div>
             )}
-            <div className="black-persist-actions">
+            <div className="skull-persist-actions">
               <button
-                className="black-persist-btn primary"
+                className="skull-persist-btn primary"
                 onClick={startNextRound}
               >
                 <span>Próxima rodada</span>
                 <ArrowRight size={16} />
               </button>
               <button
-                className="black-persist-btn secondary"
-                onClick={fightBlack}
+                className="skull-persist-btn secondary"
+                onClick={fightSkull}
               >
                 <RotateCcw size={15} />
                 <span>Tentar novamente</span>
               </button>
               <button
-                className="black-persist-btn ghost"
-                onClick={() => setDismissBlackScreen(true)}
+                className="skull-persist-btn ghost"
+                onClick={() => setDismissSkullScreen(true)}
               >
                 <Eye size={15} />
                 <span>Ver tabuleiro</span>
@@ -2783,21 +2787,21 @@ export default function App() {
         </div>
       )}
 
-      {blackWins && dismissBlackScreen && (
+      {skullWins && dismissSkullScreen && (
         <aside
-          className="black-dismissed-banner"
-          onClick={() => setDismissBlackScreen(false)}
-          title="Clique para restaurar a tela cheia de Black"
+          className="skull-dismissed-banner"
+          onClick={() => setDismissSkullScreen(false)}
+          title="Clique para restaurar a tela cheia de Skull"
         >
           <Skull size={15} />
           <span>
-            <b>Black Persiste</b> — +40 de vantagem venceu esta rodada (clique
+            <b>Skull Persiste</b> — +40 de vantagem venceu esta rodada (clique
             para voltar)
           </span>
         </aside>
       )}
 
-      {playerWinsAgainstBlack && !dismissWhiteVictoryScreen && (
+      {playerWinsAgainstSkull && !dismissWhiteVictoryScreen && (
         <div
           className="white-victory-screen"
           role="dialog"
@@ -2822,7 +2826,7 @@ export default function App() {
               <Trophy size={48} strokeWidth={2} />
             </div>
             <h1 id="white-victory-title" className="white-victory-title">
-              Você Venceu Black!
+              Você Venceu Skull!
             </h1>
             <h2 className="white-victory-subtitle">
               Você se tornou um mestre em engenharia de prompt e limpou a
@@ -2849,7 +2853,7 @@ export default function App() {
               </div>
               <div className="white-victory-vs">×</div>
               <div className="white-victory-card is-defeated">
-                <span>BLACK (PURIFICADO)</span>
+                <span>SKULL (PURIFICADO)</span>
                 <strong>
                   {result ? formatScore(result.cpu.efficiency) : "14.2"}
                 </strong>
@@ -2866,7 +2870,7 @@ export default function App() {
                 className="white-victory-btn primary"
                 onClick={() => {
                   setDismissWhiteVictoryScreen(false);
-                  if (isTestWinBlack) {
+                  if (isTestWinSkull) {
                     window.history.replaceState(
                       {},
                       document.title,
@@ -2900,7 +2904,7 @@ export default function App() {
         </div>
       )}
 
-      {playerWinsAgainstBlack && dismissWhiteVictoryScreen && (
+      {playerWinsAgainstSkull && dismissWhiteVictoryScreen && (
         <aside
           className="white-dismissed-banner"
           onClick={() => setDismissWhiteVictoryScreen(false)}
@@ -2909,7 +2913,7 @@ export default function App() {
           <Trophy size={16} />
           <span>
             <b>Mestre em Engenharia de Prompt!</b> — Você limpou a DarkWeb e
-            derrotou Black (clique para voltar)
+            derrotou Skull (clique para voltar)
           </span>
         </aside>
       )}
