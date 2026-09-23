@@ -12,8 +12,10 @@ import {
   Bot,
   Check,
   ChevronRight,
+  ChevronLeft,
   CircleHelp,
   Coins,
+  Compass,
   Eye,
   Flame,
   Gavel,
@@ -21,6 +23,7 @@ import {
   Info,
   Layers,
   Library,
+  Lightbulb,
   LockKeyhole,
   RotateCcw,
   Skull,
@@ -952,7 +955,7 @@ const CARDS: Card[] = [
     id: "chaining",
     label: "Encadeamento",
     type: "ESTRATÉGIA",
-    description: "Atua conversando com a IA.",
+    description: "Reaproveita a resposta anterior para encadear etapas.",
     cost: 3,
     quality: 10,
     tags: ["structure", "detail", "evidence"],
@@ -1154,7 +1157,8 @@ const LIBRARY_SYNERGIES: LibrarySynergy[] = [
     detail:
       "Adjetivos sem critério ('criativo', 'profissional', 'o melhor possível') custam caro e não guiam nada. Cada uma delas derruba a qualidade do prompt.",
     bonus: -5,
-    matches: cards => cards.some(card => card.trap),
+    matches: cards =>
+      cards.some(card => card.trap || card.type.toUpperCase() === "VAGO"),
   },
   {
     id: "redundancy",
@@ -1168,14 +1172,18 @@ const LIBRARY_SYNERGIES: LibrarySynergy[] = [
   },
   {
     id: "chaining-multi",
-    label: "Encadeamento Múltiplo",
+    label: "Encadeamento de Prompt",
     category: "ESTRATÉGIA",
-    requirement: "2 ou mais cartas de Encadeamento",
+    requirement: "1 ou mais cartas de Encadeamento + 1 outro card",
     detail:
-      "Uma carta de Encadeamento sozinha não encadeia nada: o ganho aparece quando a resposta anterior alimenta a etapa seguinte.",
-    bonus: 16,
-    matches: cards =>
-      cards.filter(card => card.id.startsWith("chaining")).length > 1,
+      "O encadeamento de prompt parte da resposta anterior. Escolhido com pelo menos 1 outro card qualquer, cada encadeamento acumula +10 de qualidade.",
+    bonus: 10,
+    matches: cards => {
+      const cCount = cards.filter(card =>
+        card.id.startsWith("chaining")
+      ).length;
+      return cCount > 0 && cards.length > cCount;
+    },
   },
 
   {
@@ -1587,25 +1595,32 @@ function evaluate(
     });
   }
 
-  if (chainCount > 1) {
+  const nonChainCount = cards.length - chainCount;
+  if (chainCount > 0 && nonChainCount >= 1) {
+    const chainBonus = chainCount * 10;
     specialSynergies.push({
-      label: "Encadeamento múltiplo",
-      bonus: 16,
-      note: "Duas ou mais etapas encadeadas quebram a tarefa em pedidos simples e verificáveis.",
+      label:
+        chainCount > 1
+          ? `Encadeamento múltiplo (${chainCount}x)`
+          : "Encadeamento de prompt",
+      bonus: chainBonus,
+      note:
+        chainCount > 1
+          ? `${chainCount} etapas encadeadas acumulando valor (+${chainBonus}) a partir da resposta do prompt anterior.`
+          : "Encadeia uma nova etapa a partir da resposta do prompt anterior (+10).",
     });
   }
 
   const specialSynergy = specialSynergies[0] ?? null;
-  const specialBonus = specialSynergies.reduce(
-    (total, syn) => total + syn.bonus,
-    0
-  );
+  const positiveSpecialBonus = specialSynergies
+    .filter(syn => syn.bonus > 0)
+    .reduce((total, syn) => total + syn.bonus, 0);
   const discoveredLibraryIds = LIBRARY_SYNERGIES.filter(entry =>
     entry.matches(cards, task, synergyActive)
   ).map(entry => entry.id);
   const rawQuality = Math.max(
     0,
-    baseQuality + focusBonus + synergyBonus + specialBonus - trapPenalty
+    baseQuality + focusBonus + synergyBonus + positiveSpecialBonus - trapPenalty
   );
   const redundancyPenalty = Math.round(rawQuality * redundancyRate);
   const quality = Math.max(0, rawQuality - redundancyPenalty);
@@ -1756,6 +1771,49 @@ function Scorebar({
   );
 }
 
+type TutorialStep = {
+  targetId: string;
+  badge: string;
+  title: string;
+  description: string;
+  tip: string;
+};
+
+const TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    targetId: "tutorial-brief",
+    badge: "Passo 1 de 4 · O Briefing",
+    title: "1. Veja o que a IA precisa gerar",
+    description:
+      "Toda rodada apresenta um desafio com público-alvo e objetivo específicos. Olhe para o 'sinal visível' e o 'insight': eles indicam os temas e palavras-chave que garantem notas altas!",
+    tip: "Na vida real: antes de abrir o ChatGPT ou Claude, tenha total clareza de quem é o público e o objetivo da mensagem.",
+  },
+  {
+    targetId: "tutorial-market",
+    badge: "Passo 2 de 4 · O Mercado de Elementos",
+    title: "2. Escolha as Cartas Estratégicas",
+    description:
+      "Cada carta representa uma peça do prompt (Persona, Contexto, Tom, Formato). Clique para adicionar cartas ao seu prompt. Atenção: evite cartas do mesmo tipo para não sofrer penalidade de redundância!",
+    tip: "A regra de ouro da IA é 'Menos é Mais'. Uma ou duas cartas precisas valem mais que encher o carrinho.",
+  },
+  {
+    targetId: "tutorial-wallet",
+    badge: "Passo 3 de 4 · Moedas & Eficiência",
+    title: "3. Controle o Custo (Tokens da IA)",
+    description:
+      "Suas moedas representam o tempo e o custo de processamento (tokens). Sua pontuação final é calculada por EFICIÊNCIA = Qualidade ÷ Custo. Se gastar pouco e acertar o alvo, sua eficiência dispara!",
+    tip: "Prompts gigantescos gastam mais tempo e dinheiro (tokens). Seja direto e cirúrgico.",
+  },
+  {
+    targetId: "tutorial-submit",
+    badge: "Passo 4 de 4 · O Duelo",
+    title: "4. Teste seu Prompt na Arena",
+    description:
+      "Quando escolher ao menos 2 cartas complementares, clique em 'Parar e revelar'. A CPU vai revelar a lógica dela e o placar comparará a eficiência dos dois prompts!",
+    tip: "Pronto para duelar? Escolha suas cartas e clique no botão para testar sua eficiência!",
+  },
+];
+
 export default function App() {
   const demo = useMemo(
     () => new URLSearchParams(window.location.search).has("demo"),
@@ -1776,6 +1834,13 @@ export default function App() {
 
   const demoRound = useRef(0);
   const [infoOpen, setInfoOpen] = useState(true);
+  const [tutorialStep, setTutorialStep] = useState<number | null>(null);
+  const [tutorialTargetRect, setTutorialTargetRect] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [discoveredSynergies, setDiscoveredSynergies] = useState<string[]>(
     () => {
@@ -2000,9 +2065,7 @@ export default function App() {
     }
     setSelectedIds(current => [...current, card.id]);
     setNotice(
-      card.trap
-        ? `${card.label} entrou no prompt — mas adjetivos sem critério não dizem nada à IA. Restam ${wallet - price} moedas.`
-        : `${card.label} entrou no seu prompt. Ainda restam ${wallet - price} moedas.`
+      `${card.label} entrou no seu prompt. Ainda restam ${wallet - price} moedas.`
     );
   };
 
@@ -2058,6 +2121,74 @@ export default function App() {
     );
     demoRound.current = 0;
   };
+
+  const startGuidedTutorial = () => {
+    setInfoOpen(false);
+    setLibraryOpen(false);
+    if (phase !== "auction" || roundState.round !== 1) {
+      setRoundState(buildRound(1, 25, 25));
+      setSelectedIds([]);
+      setResult(null);
+      setScore({ player: 0, cpu: 0 });
+      setPhase("auction");
+      setDismissSkullScreen(false);
+      setDismissWhiteVictoryScreen(false);
+      demoRound.current = 0;
+    }
+    setTutorialStep(0);
+    setNotice(
+      "Tutorial iniciado: Siga os callouts para dominar a primeira rodada!"
+    );
+  };
+
+  useEffect(() => {
+    if (tutorialStep === null) {
+      setTutorialTargetRect(null);
+      document.querySelectorAll(".tutorial-highlight-target").forEach(el => {
+        el.classList.remove("tutorial-highlight-target");
+      });
+      return;
+    }
+    const step = TUTORIAL_STEPS[tutorialStep];
+    if (!step) return;
+
+    const updateRect = () => {
+      const el = document.getElementById(step.targetId);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        setTutorialTargetRect({
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        });
+      }
+    };
+
+    const el = document.getElementById(step.targetId);
+    document.querySelectorAll(".tutorial-highlight-target").forEach(elem => {
+      if (elem !== el) elem.classList.remove("tutorial-highlight-target");
+    });
+    if (el) {
+      el.classList.add("tutorial-highlight-target");
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    const t1 = window.setTimeout(updateRect, 50);
+    const t2 = window.setTimeout(updateRect, 350);
+
+    window.addEventListener("resize", updateRect);
+    window.addEventListener("scroll", updateRect, true);
+
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      window.removeEventListener("resize", updateRect);
+      window.removeEventListener("scroll", updateRect, true);
+      const targetEl = document.getElementById(step.targetId);
+      targetEl?.classList.remove("tutorial-highlight-target");
+    };
+  }, [tutorialStep]);
 
   const fightSkull = () => {
     if (phase === "thinking") return;
@@ -2220,7 +2351,7 @@ export default function App() {
           <div className={`phase-state ${phase}`}>
             <span className="phase-dot" /> {phaseLabel}
           </div>
-          <div className="wallet">
+          <div className="wallet" id="tutorial-wallet">
             <Coins size={15} />
             <span>seu saldo</span>
             <strong>{wallet}</strong>
@@ -2230,7 +2361,10 @@ export default function App() {
 
         <div className="board-grid">
           <div className="left-column">
-            <section className={`task-panel ${roundState.task.accent}`}>
+            <section
+              className={`task-panel ${roundState.task.accent}`}
+              id="tutorial-brief"
+            >
               <div className="task-meta">
                 <span className="task-number">0{roundState.round}</span>
                 <div>
@@ -2254,14 +2388,15 @@ export default function App() {
               </div>
             </section>
 
-            <section className="market-panel">
+            <section className="market-panel" id="tutorial-market">
               <div className="section-heading">
                 <div>
                   <div className="eyebrow">
                     <Gavel size={13} /> mercado de palavras
                   </div>
                   <h3>
-                    Escolha suas cartas <span>· {roundState.market.length} disponíveis</span>
+                    Escolha suas cartas{" "}
+                    <span>· {roundState.market.length} disponíveis</span>
                   </h3>
                 </div>
                 <div className="market-instruction">
@@ -2304,6 +2439,7 @@ export default function App() {
                     </span>
                   )}
                   <button
+                    id="tutorial-submit"
                     className="primary-button"
                     disabled={phase !== "auction" || selectedIds.length === 0}
                     onClick={() => finishRound(selectedIds)}
@@ -2452,35 +2588,74 @@ export default function App() {
                         ? "Ela estava ativa nesta mesa."
                         : "Ninguém montou a combinação completa."}
                     </p>
-                    {result.player.specialSynergies?.map((synergy, index) => (
-                      <div
-                        key={`player-special-${index}`}
-                        className="special-synergy is-player"
-                      >
-                        <span className="synergy-owner">você</span>
-                        <div className="synergy-body">
-                          <strong>{synergy.label}</strong>
-                          <span>{synergy.note}</span>
+                    {result.player.specialSynergies
+                      ?.filter(synergy => synergy.bonus > 0)
+                      .map((synergy, index) => (
+                        <div
+                          key={`player-special-${index}`}
+                          className="special-synergy is-player"
+                        >
+                          <span className="synergy-owner">você</span>
+                          <div className="synergy-body">
+                            <strong>{synergy.label}</strong>
+                            <span>{synergy.note}</span>
+                          </div>
+                          <b>+{synergy.bonus} qualidade</b>
                         </div>
-                        <b>+{synergy.bonus} qualidade</b>
-                      </div>
-                    ))}
+                      ))}
 
-                    {result.cpu.specialSynergies?.map((synergy, index) => (
-                      <div
-                        key={`cpu-special-${index}`}
-                        className="special-synergy is-cpu"
-                      >
-                        <span className="synergy-owner">
-                          {roundState.personality.name}
-                        </span>
-                        <div className="synergy-body">
-                          <strong>{synergy.label}</strong>
-                          <span>{synergy.note}</span>
+                    {result.player.cards.some(
+                      c => c.trap || c.type.toUpperCase() === "VAGO"
+                    ) && (
+                      <div className="trap-synergy-reveal">
+                        <div className="trap-synergy-icon">
+                          <TriangleAlert size={16} />
                         </div>
-                        <b>+{synergy.bonus} qualidade</b>
+                        <div>
+                          <span className="trap-synergy-tag">
+                            sinergia de armadilha ativada
+                          </span>
+                          <strong>
+                            Armadilha da Vagueza{" "}
+                            <b>−{result.player.trapPenalty} qualidade</b>
+                          </strong>
+                          <p>
+                            <b>Por que você errou:</b> Você escolheu{" "}
+                            {result.player.cards
+                              .filter(
+                                c => c.trap || c.type.toUpperCase() === "VAGO"
+                              )
+                              .map(c => `"${c.label}"`)
+                              .join(", ")}
+                            . Na Engenharia de Prompt, pedir para a IA "ser
+                            criativa", "seja profissional", "Não seja muito
+                            longo" ou "fazer o melhor possível" não dá nenhuma
+                            instrução concreta sobre o que gerar. O modelo
+                            precisa de regras, contexto, público e formato.
+                            Cartas vagas apenas consomem moedas e derrubam sua
+                            eficiência!
+                          </p>
+                        </div>
                       </div>
-                    ))}
+                    )}
+
+                    {result.cpu.specialSynergies
+                      ?.filter(synergy => synergy.bonus > 0)
+                      .map((synergy, index) => (
+                        <div
+                          key={`cpu-special-${index}`}
+                          className="special-synergy is-cpu"
+                        >
+                          <span className="synergy-owner">
+                            {roundState.personality.name}
+                          </span>
+                          <div className="synergy-body">
+                            <strong>{synergy.label}</strong>
+                            <span>{synergy.note}</span>
+                          </div>
+                          <b>+{synergy.bonus} qualidade</b>
+                        </div>
+                      ))}
                   </div>
                 </div>
                 <button className="next-button" onClick={startNextRound}>
@@ -2917,6 +3092,163 @@ export default function App() {
           </span>
         </aside>
       )}
+      {tutorialStep !== null && (
+        <>
+          <div
+            className="tutorial-backdrop-wrapper"
+            onClick={e => {
+              if (tutorialTargetRect) {
+                const { clientX, clientY } = e;
+                if (
+                  clientX >= tutorialTargetRect.left - 6 &&
+                  clientX <=
+                    tutorialTargetRect.left + tutorialTargetRect.width + 6 &&
+                  clientY >= tutorialTargetRect.top - 6 &&
+                  clientY <=
+                    tutorialTargetRect.top + tutorialTargetRect.height + 6
+                ) {
+                  return;
+                }
+              }
+              setTutorialStep(null);
+            }}
+          >
+            <svg
+              className="tutorial-backdrop-svg"
+              width="100%"
+              height="100%"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <mask id="tutorial-spotlight-mask">
+                  <rect x="0" y="0" width="100%" height="100%" fill="white" />
+                  {tutorialTargetRect && (
+                    <rect
+                      x={tutorialTargetRect.left - 6}
+                      y={tutorialTargetRect.top - 6}
+                      width={tutorialTargetRect.width + 12}
+                      height={tutorialTargetRect.height + 12}
+                      rx="10"
+                      fill="black"
+                    />
+                  )}
+                </mask>
+              </defs>
+              <rect
+                x="0"
+                y="0"
+                width="100%"
+                height="100%"
+                fill="rgba(2, 6, 14, 0.62)"
+                mask="url(#tutorial-spotlight-mask)"
+              />
+              {tutorialTargetRect && (
+                <rect
+                  x={tutorialTargetRect.left - 6}
+                  y={tutorialTargetRect.top - 6}
+                  width={tutorialTargetRect.width + 12}
+                  height={tutorialTargetRect.height + 12}
+                  rx="10"
+                  fill="none"
+                  stroke="#ffb461"
+                  strokeWidth="3"
+                  className="tutorial-spotlight-border"
+                />
+              )}
+            </svg>
+          </div>
+
+          <aside
+            className="tutorial-overlay-container"
+            role="region"
+            aria-label="Tutorial guiado da primeira rodada"
+          >
+            <div
+              className="tutorial-callout-card"
+              role="dialog"
+              aria-modal="false"
+            >
+              <div className="tutorial-card-header">
+                <div className="tutorial-step-badge">
+                  <Compass size={13} />
+                  <span>{TUTORIAL_STEPS[tutorialStep].badge}</span>
+                </div>
+                <button
+                  className="tutorial-dismiss-btn"
+                  onClick={() => setTutorialStep(null)}
+                  title="Pular tutorial"
+                  aria-label="Pular tutorial"
+                >
+                  ×
+                </button>
+              </div>
+
+              <h4 className="tutorial-title">
+                {TUTORIAL_STEPS[tutorialStep].title}
+              </h4>
+              <p className="tutorial-desc">
+                {TUTORIAL_STEPS[tutorialStep].description}
+              </p>
+
+              <div className="tutorial-tip-line">
+                <Lightbulb size={15} className="tip-icon" />
+                <span>{TUTORIAL_STEPS[tutorialStep].tip}</span>
+              </div>
+
+              <div className="tutorial-footer">
+                <div className="tutorial-step-dots">
+                  {TUTORIAL_STEPS.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className={`step-dot ${
+                        i === tutorialStep
+                          ? "is-active"
+                          : i < tutorialStep
+                            ? "is-done"
+                            : ""
+                      }`}
+                      onClick={() => setTutorialStep(i)}
+                      title={`Ir para passo ${i + 1}`}
+                      aria-label={`Passo ${i + 1}`}
+                    />
+                  ))}
+                </div>
+
+                <div className="tutorial-nav-buttons">
+                  {tutorialStep > 0 && (
+                    <button
+                      type="button"
+                      className="tutorial-nav-btn back"
+                      onClick={() => setTutorialStep(s => (s ?? 1) - 1)}
+                    >
+                      <ChevronLeft size={13} /> Anterior
+                    </button>
+                  )}
+                  {tutorialStep < TUTORIAL_STEPS.length - 1 ? (
+                    <button
+                      type="button"
+                      className="tutorial-nav-btn next"
+                      onClick={() => setTutorialStep(s => (s ?? 0) + 1)}
+                    >
+                      Próximo <ChevronRight size={13} />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="tutorial-nav-btn finish"
+                      onClick={() => setTutorialStep(null)}
+                    >
+                      <Check size={13} /> Começar a Jogar!
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </aside>
+        </>
+      )}
+
       {libraryOpen && (
         <div
           className="info-backdrop"
@@ -3037,122 +3369,259 @@ export default function App() {
             </div>
             <div className="help-modal-body">
               <div className="eyebrow">
-                <CircleHelp size={13} /> engenharia de prompt
+                <CircleHelp size={13} /> guia didático para iniciantes
               </div>
-              <h2 id="info-title">
-                Quanto melhor a pergunta - melhor a resposta
-              </h2>
+              <h2 id="info-title">Como dominar a Engenharia de Prompt</h2>
               <p className="help-lead">
-                A <b>Engenharia de Prompt</b> é a habilidade de guiar a
-                Inteligência Artificial. Não se trata de código, mas de combinar
-                clareza, contexto e restrições para extrair exatamente a
-                resposta que você imaginou.
+                A <b>Engenharia de Prompt</b> não é programação de computadores:
+                é a arte de saber pedir. Ao invés de digitar pedidos vagos, você
+                aprende a combinar clareza, contexto e foco para extrair
+                respostas precisas de qualquer Inteligência Artificial.
               </p>
 
-              <div className="prompt-explainer" style={{ padding: "20px" }}>
-                <div
-                  className="prompt-explainer-title"
-                  style={{ marginBottom: "12px" }}
-                >
-                  <Sparkles size={14} /> Os Elementos de um Prompt
+              {/* SEÇÃO 1: O que são os Elementos na vida real */}
+              <div className="help-didactic-card">
+                <div className="help-card-header">
+                  <div className="help-card-icon sparkles">
+                    <Sparkles size={16} />
+                  </div>
+                  <div>
+                    <span className="help-card-eyebrow">
+                      Conceito Prático #01
+                    </span>
+                    <h3>O que são os "Elementos" do jogo na vida real?</h3>
+                  </div>
                 </div>
-                <p>
-                  Para a IA não ter que "adivinhar" o que você quer, forneça as
-                  peças do quebra-cabeça. Veja como transformar um pedido
-                  genérico em uma instrução de alto nível:
+
+                <p className="help-card-text">
+                  Na vida real, nós não "compramos cartas". Em vez disso, nós
+                  digitamos esses elementos diretamente dentro de um texto
+                  enviado para a IA. Um bom prompt é a soma harmônica de várias
+                  instruções complementares.
                 </p>
-                <div
-                  className="prompt-example"
-                  style={{ marginTop: "16px", marginBottom: "16px" }}
-                >
-                  <span>exemplo prático estruturado</span>
-                  <code>
-                    <b style={{ color: "#ffb461", fontWeight: 600 }}>
-                      [Persona]
-                    </b>{" "}
-                    Aja como um professor criativo...
-                    <br />
-                    <b style={{ color: "#ffb461", fontWeight: 600 }}>
-                      [Tarefa]
-                    </b>{" "}
-                    Explique o que é a gravidade...
-                    <br />
-                    <b style={{ color: "#ffb461", fontWeight: 600 }}>
-                      [Público]
-                    </b>{" "}
-                    Para uma criança de 10 anos que gosta de espaço...
-                    <br />
-                    <b style={{ color: "#ffb461", fontWeight: 600 }}>
-                      [Formato]
-                    </b>{" "}
-                    Em apenas 1 parágrafo, usando a metáfora de um lençol
-                    esticado.
-                  </code>
+
+                <div className="prompt-highlighter-block">
+                  <span className="highlighter-lead">
+                    Na vida real, um bom prompt é a soma de vários elementos.
+                    Veja como as cartas do jogo se parecem em uma frase:
+                  </span>
+                  <div className="prompt-highlighter-preview">
+                    <span className="highlight-tag tag-persona">
+                      Quero que você aja como um Especialista em Marketing.{" "}
+                      <small>(Carta: Persona)</small>
+                    </span>
+                    <span className="highlight-tag tag-format">
+                      Escreva um Post para o Instagram{" "}
+                      <small>(Carta: Formato)</small>
+                    </span>{" "}
+                    <span className="highlight-tag tag-context">
+                      sobre nosso novo tênis de corrida,{" "}
+                      <small>(Carta: Contexto)</small>
+                    </span>
+                    <span className="highlight-tag tag-tone">
+                      usando um <strong>tom empolgante.</strong>{" "}
+                      <small>(Carta: Tom)</small>
+                    </span>
+                  </div>
                 </div>
 
-                <div
-                  style={{
-                    marginTop: "20px",
-                    padding: "12px 14px",
-                    borderRadius: "6px",
-                    background: "rgba(255, 173, 85, 0.1)",
-                    borderLeft: "3px solid #ffad55",
-                    color: "#ffd6a5",
-                    fontSize: "12px",
-                    lineHeight: "1.4",
-                  }}
-                >
+                <div className="highlighter-legend-grid">
+                  <div className="legend-item persona">
+                    <span className="legend-dot" />
+                    <div>
+                      <strong>Persona</strong>
+                      <small>Quem a IA interpreta</small>
+                    </div>
+                  </div>
+                  <div className="legend-item format">
+                    <span className="legend-dot" />
+                    <div>
+                      <strong>Formato</strong>
+                      <small>Estrutura da resposta</small>
+                    </div>
+                  </div>
+                  <div className="legend-item context">
+                    <span className="legend-dot" />
+                    <div>
+                      <strong>Contexto</strong>
+                      <small>O assunto ou produto</small>
+                    </div>
+                  </div>
+                  <div className="legend-item tone">
+                    <span className="legend-dot" />
+                    <div>
+                      <strong>Tom</strong>
+                      <small>Estilo e emoção</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="help-callout-box">
                   <strong>💡 Dica da Arena:</strong> No jogo você não escreve o
-                  prompt de forma literal. O seu objetivo é escolher e comprar
-                  as cartas que representam os melhores{" "}
-                  <strong>elementos</strong> para compor o resultado solicitado!
+                  prompt digitando cada palavra. O seu papel é escolher e
+                  comprar as cartas que representam os melhores{" "}
+                  <strong>elementos</strong> para compor o resultado solicitado
+                  sem desperdícios!
                 </div>
               </div>
 
-              <div className="info-divider" style={{ margin: "36px 0" }} />
+              {/* SEÇÃO 2: A Metáfora do Custo */}
+              <div className="help-didactic-card cost-card">
+                <div className="help-card-header">
+                  <div className="help-card-icon coins">
+                    <Coins size={16} />
+                  </div>
+                  <div>
+                    <span className="help-card-eyebrow">
+                      Conceito Prático #02
+                    </span>
+                    <h3>A Metáfora do Custo</h3>
+                  </div>
+                </div>
 
-              <div className="eyebrow" style={{ marginBottom: "16px" }}>
-                <Gavel size={13} /> como funciona o jogo
-              </div>
-              <div className="help-steps">
-                <div className="help-step">
-                  <span>01</span>
-                  <div>
-                    <strong>Monte sua estratégia</strong>
+                <p className="help-card-text quote-style">
+                  Por que as cartas têm custo? O custo no jogo representa o
+                  tempo que você gasta pensando e digitando aquela instrução,
+                  além do 'custo de processamento' (tokens) da própria IA.
+                  Elementos complexos como 'Cadeia de Pensamento' dão mais
+                  trabalho para escrever, por isso custam mais caro, mas
+                  entregam muita qualidade.
+                </p>
+
+                <div className="cost-pills-row">
+                  <div className="cost-pill">
+                    <span className="cost-pill-badge">Tempo & Esforço</span>
                     <small>
-                      Analise o brief da rodada e compre cartas de elementos
-                      (Persona, Contexto, Tom) que melhor resolvem o desafio.
+                      O tempo que você leva planejando e refinando comandos
                     </small>
                   </div>
-                </div>
-                <div className="help-step">
-                  <span>02</span>
-                  <div>
-                    <strong>Foque na eficiência</strong>
+                  <div className="cost-pill">
+                    <span className="cost-pill-badge">Tokens da IA</span>
                     <small>
-                      A qualidade das cartas é oculta. O vencedor não é quem
-                      gasta mais moedas, mas quem gera mais valor pelo menor
-                      custo.
-                    </small>
-                  </div>
-                </div>
-                <div className="help-step">
-                  <span>03</span>
-                  <div>
-                    <strong>Descubra sinergias</strong>
-                    <small>
-                      Existem combinações secretas. Juntar as cartas certas
-                      (como a estrutura PITACO) destrava multiplicadores de
-                      pontuação!
+                      Cada palavra processada consome recursos computacionais
                     </small>
                   </div>
                 </div>
               </div>
 
-              <div className="info-divider" style={{ margin: "32px 0 20px" }} />
+              {/* SEÇÃO 3: A Lição do Boss (Menos é Mais) */}
+              <div className="help-didactic-card boss-card">
+                <div className="help-card-header">
+                  <div className="help-card-icon swords">
+                    <Swords size={16} />
+                  </div>
+                  <div>
+                    <span className="help-card-eyebrow">
+                      Estratégia Avançada #03
+                    </span>
+                    <h3>Como vencer o Boss (Ares) e o Over-prompting</h3>
+                  </div>
+                </div>
+
+                <p className="help-card-text quote-style">
+                  O Boss tem uma vantagem injusta de +20 pontos nativos,
+                  simulando uma Inteligência Artificial de última geração. Para
+                  vencê-lo, você não pode comprar muitas cartas. Você precisa
+                  usar no máximo 1 ou 2 cartas baratas e precisas para ter uma
+                  Eficiência gigante. Isso ensina a regra de ouro da IA: 'Menos
+                  é Mais'. Modelos avançados não precisam de textos gigantescos
+                  e cheios de regras (over-prompting). Instruções diretas,
+                  cirúrgicas e curtas geram respostas mais rápidas, baratas e
+                  eficientes.
+                </p>
+
+                <div className="efficiency-formula-box">
+                  <div className="formula-head">
+                    <Gauge size={14} /> Fórmula do Jogo: Eficiência = Qualidade
+                    ÷ Custo
+                  </div>
+                  <div className="formula-comparison">
+                    <div className="formula-side bad">
+                      <span>Over-prompting (Erro Comum)</span>
+                      <strong>50 Qualidade ÷ 25 Custo = 2.0</strong>
+                      <small>
+                        Comprou cartas demais, inflou o custo e perdeu na
+                        eficiência.
+                      </small>
+                    </div>
+                    <div className="formula-vs">vs</div>
+                    <div className="formula-side good">
+                      <span>Instrução Cirúrgica (Mestre)</span>
+                      <strong>36 Qualidade ÷ 3 Custo = 12.0</strong>
+                      <small>
+                        Poucas cartas precisas = Eficiência esmagadora!
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Como Funciona o Jogo */}
+              <div className="help-didactic-card rules-card">
+                <div className="eyebrow" style={{ marginBottom: "12px" }}>
+                  <Gavel size={13} /> como funciona a rodada
+                </div>
+                <div className="help-steps">
+                  <div className="help-step">
+                    <span>01</span>
+                    <div>
+                      <strong>Monte sua estratégia</strong>
+                      <small>
+                        Analise o brief da rodada e compre cartas de elementos
+                        (Persona, Contexto, Tom) que melhor resolvem o desafio.
+                      </small>
+                    </div>
+                  </div>
+                  <div className="help-step">
+                    <span>02</span>
+                    <div>
+                      <strong>Foque na eficiência</strong>
+                      <small>
+                        A qualidade das cartas é oculta. O vencedor não é quem
+                        gasta mais moedas, mas quem gera mais valor pelo menor
+                        custo.
+                      </small>
+                    </div>
+                  </div>
+                  <div className="help-step">
+                    <span>03</span>
+                    <div>
+                      <strong>Descubra sinergias</strong>
+                      <small>
+                        Existem combinações secretas. Juntar as cartas certas
+                        destrava bônus substanciais de pontuação!
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Botão de Tutorial Guiado */}
+              <div className="help-tutorial-cta-wrap">
+                <button
+                  type="button"
+                  className="help-guided-tutorial-btn"
+                  onClick={startGuidedTutorial}
+                >
+                  <div className="btn-icon-pulse">
+                    <Compass size={20} />
+                  </div>
+                  <div className="btn-text-block">
+                    <span className="btn-main-label">Tutorial Guiado</span>
+                    <small className="btn-sub-label">
+                      Ir para a tela principal e ver onde clicar com callouts
+                      explicativos
+                    </small>
+                  </div>
+                  <ArrowRight size={18} className="btn-arrow" />
+                </button>
+              </div>
+
+              <div className="info-divider" style={{ margin: "24px 0 16px" }} />
               <small className="help-footer">
                 Cada rodada embaralha tarefas, cartas, preços e sinergias.
-                Jogue, revele e use a reflexão para melhorar seu próximo prompt.
+                Jogue, revele e use a reflexão para melhorar seus prompts na
+                vida real.
               </small>
               <div className="rights-line">
                 Jogo criado pela{" "}

@@ -1681,6 +1681,27 @@ button:focus-visible {
   background: rgba(255, 138, 76, 0.2);
   color: #ffb27a;
 }
+.special-synergy.is-trap-synergy {
+  border-color: rgba(244, 63, 94, 0.45);
+  background: linear-gradient(
+    90deg,
+    rgba(120, 25, 35, 0.3),
+    rgba(45, 12, 18, 0.35)
+  );
+}
+.special-synergy.is-trap-synergy .synergy-owner {
+  background: rgba(244, 63, 94, 0.25);
+  color: #fca5a5;
+}
+.special-synergy.is-trap-synergy strong {
+  color: #ffe4e6;
+}
+.special-synergy.is-trap-synergy span {
+  color: #fecdd3;
+}
+.special-synergy.is-trap-synergy b {
+  color: #f43f5e;
+}
 
 .special-synergy strong {
   color: #d7c2ff;
@@ -1832,9 +1853,9 @@ button:focus-visible {
 .help-modal {
   display: flex;
   flex-direction: column;
-  width: min(100%, 670px);
-  max-height: min(760px, calc(100vh - 48px));
-  max-height: min(760px, calc(100dvh - 48px));
+  width: min(100%, 720px);
+  max-height: min(840px, calc(100vh - 40px));
+  max-height: min(840px, calc(100dvh - 40px));
   padding: 0 !important;
   overflow: hidden;
   margin: auto;
@@ -1886,6 +1907,27 @@ button:focus-visible {
   -webkit-overflow-scrolling: touch;
   padding: 24px 28px 28px;
   overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 174, 88, 0.35) rgba(10, 24, 42, 0.5);
+}
+
+.help-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.help-modal-body::-webkit-scrollbar-track {
+  background: rgba(10, 24, 42, 0.5);
+  border-radius: 4px;
+}
+
+.help-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 174, 88, 0.35);
+  border-radius: 4px;
+}
+
+.help-modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 174, 88, 0.6);
 }
 
 .help-modal-body .eyebrow {
@@ -1942,84 +1984,726 @@ button:focus-visible {
   font-size: 10px;
   line-height: 1.35;
 }
-.prompt-explainer {
-  padding: 14px;
-  border: 1px solid rgba(123, 169, 255, 0.24);
+/* Cards Didáticos do Modal de Ajuda */
+.help-didactic-card {
+  position: relative;
+  margin-bottom: 20px;
+  padding: 20px 22px;
+  border-radius: 10px;
+  border: 1px solid rgba(135, 175, 230, 0.22);
   background: linear-gradient(
-    135deg,
-    rgba(29, 61, 107, 0.42),
-    rgba(14, 29, 50, 0.52)
+    140deg,
+    rgba(18, 38, 66, 0.65) 0%,
+    rgba(10, 22, 40, 0.75) 100%
   );
-  border-radius: 8px;
-}
-.prompt-explainer-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #9fc4ff;
-  font:
-    9px "DM Mono",
-    monospace;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-.prompt-explainer p {
-  max-width: 555px !important;
-  margin: 8px 0 11px !important;
-  color: #cbd8e8 !important;
-  font-size: 11px !important;
-  line-height: 1.45 !important;
-}
-.prompt-explainer p b {
-  color: #ffbe77;
-  font-weight: 600;
-}
-.prompt-example {
-  padding: 9px 10px;
-  border-left: 2px solid #ffab55;
-  background: rgba(2, 11, 23, 0.35);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 14px;
 }
-.prompt-example span {
-  color: #ffb461;
-  font:
-    8px "DM Mono",
-    monospace;
+
+.help-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.help-card-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.help-card-icon.sparkles {
+  background: rgba(255, 174, 88, 0.16);
+  color: #ffad55;
+  border: 1px solid rgba(255, 174, 88, 0.35);
+}
+
+.help-card-icon.coins {
+  background: rgba(250, 204, 21, 0.16);
+  color: #facc15;
+  border: 1px solid rgba(250, 204, 21, 0.35);
+}
+
+.help-card-icon.swords {
+  background: rgba(239, 68, 68, 0.16);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.help-card-eyebrow {
+  display: block;
+  font: 600 9px/1 "DM Mono", monospace;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  color: #ffad55;
+  margin-bottom: 4px;
 }
-.prompt-example code {
-  color: #e9eef6;
-  font:
-    11px/1.45 "DM Sans",
-    sans-serif;
-  white-space: normal;
+
+.help-didactic-card h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: #f5f3ec;
+  letter-spacing: -0.02em;
 }
-.why-grid {
+
+.help-card-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #c0d1e5;
+  margin: 0;
+}
+
+.help-card-text.quote-style {
+  padding-left: 14px;
+  border-left: 3px solid #ffad55;
+  background: rgba(255, 173, 85, 0.06);
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-right: 12px;
+  border-radius: 0 6px 6px 0;
+  color: #e2ecf8;
+}
+
+/* Prompt Highlighter Box (Simulando marca-texto colorido) */
+.prompt-highlighter-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(4, 12, 22, 0.65);
+  border: 1px solid rgba(135, 175, 230, 0.2);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.highlighter-lead {
+  font-size: 12px;
+  color: #9eb2cb;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.prompt-highlighter-preview {
+  font-size: 13.5px;
+  line-height: 1.9;
+  color: #f1f5f9;
+  padding: 12px 14px;
+  background: rgba(2, 7, 14, 0.85);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Marca-texto tags */
+.highlight-tag {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 2px 7px;
+  margin: 2px 1px;
+  border-radius: 5px;
+  font-size: 12.5px;
+  line-height: 1.3;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  vertical-align: baseline;
+}
+
+.highlight-tag strong {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.highlight-tag small {
+  font-size: 10px;
+  font-family: "DM Mono", monospace;
+  opacity: 0.9;
+}
+
+/* Tag Persona: Roxo elétrico */
+.highlight-tag.tag-persona {
+  background: rgba(168, 85, 247, 0.28);
+  border: 1px solid rgba(192, 132, 252, 0.7);
+  color: #f3e8ff;
+  box-shadow: inset 0 0 12px rgba(168, 85, 247, 0.2);
+}
+
+/* Tag Formato: Ciano vibrante */
+.highlight-tag.tag-format {
+  background: rgba(14, 165, 233, 0.28);
+  border: 1px solid rgba(56, 189, 248, 0.7);
+  color: #e0f2fe;
+  box-shadow: inset 0 0 12px rgba(14, 165, 233, 0.2);
+}
+
+/* Tag Contexto: Dourado / Âmbar */
+.highlight-tag.tag-context {
+  background: rgba(245, 158, 11, 0.28);
+  border: 1px solid rgba(251, 191, 36, 0.7);
+  color: #fef3c7;
+  box-shadow: inset 0 0 12px rgba(245, 158, 11, 0.2);
+}
+
+/* Tag Tom: Rosa / Coral vivo */
+.highlight-tag.tag-tone {
+  background: rgba(244, 63, 94, 0.28);
+  border: 1px solid rgba(251, 113, 133, 0.7);
+  color: #ffe4e6;
+  box-shadow: inset 0 0 12px rgba(244, 63, 94, 0.2);
+}
+
+/* Legenda das tags */
+.highlighter-legend-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  margin-top: 13px;
+  margin-top: 4px;
 }
-.why-grid div {
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-item.persona .legend-dot {
+  background: #c084fc;
+  box-shadow: 0 0 8px #c084fc;
+}
+
+.legend-item.format .legend-dot {
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.legend-item.context .legend-dot {
+  background: #fbbf24;
+  box-shadow: 0 0 8px #fbbf24;
+}
+
+.legend-item.tone .legend-dot {
+  background: #fb7185;
+  box-shadow: 0 0 8px #fb7185;
+}
+
+.legend-item strong {
+  display: block;
+  font-size: 11px;
+  color: #f1f5f9;
+}
+
+.legend-item small {
+  font-size: 9px;
+  color: #94a3b8;
+  line-height: 1.2;
+}
+
+.help-callout-box {
+  padding: 11px 14px;
+  border-radius: 6px;
+  background: rgba(255, 173, 85, 0.1);
+  border-left: 3px solid #ffad55;
+  color: #ffd6a5;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Metáfora do Custo */
+.cost-card {
+  border-color: rgba(250, 204, 21, 0.28);
+  background: linear-gradient(
+    140deg,
+    rgba(28, 38, 52, 0.7) 0%,
+    rgba(14, 22, 34, 0.8) 100%
+  );
+}
+
+.cost-pills-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.cost-pill {
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: rgba(250, 204, 21, 0.06);
+  border: 1px solid rgba(250, 204, 21, 0.2);
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 10px;
-  background: rgba(255, 159, 61, 0.07);
-  border: 1px solid rgba(255, 174, 88, 0.14);
+}
+
+.cost-pill-badge {
+  font: 600 10px "DM Mono", monospace;
+  color: #fde047;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cost-pill small {
+  font-size: 11px;
+  color: #cbd5e1;
+  line-height: 1.35;
+}
+
+/* Lição do Boss (Ares) & Over-prompting */
+.boss-card {
+  border-color: rgba(239, 68, 68, 0.32);
+  background: linear-gradient(
+    140deg,
+    rgba(38, 20, 26, 0.65) 0%,
+    rgba(18, 12, 18, 0.78) 100%
+  );
+}
+
+.efficiency-formula-box {
+  background: rgba(10, 6, 12, 0.65);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formula-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 600 11px "DM Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #ff9898;
+}
+
+.formula-comparison {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.formula-side {
+  padding: 10px 12px;
   border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
-.why-grid strong {
-  color: #ffc17d;
+
+.formula-side.bad {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.formula-side.bad strong {
+  color: #fca5a5;
+  font-size: 13.5px;
+}
+
+.formula-side.good {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.formula-side.good strong {
+  color: #86efac;
+  font-size: 13.5px;
+}
+
+.formula-side span {
   font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+  font-family: "DM Mono", monospace;
 }
-.why-grid span {
-  color: #8d9fb7;
-  font-size: 9px;
+
+.formula-side small {
+  font-size: 10px;
+  color: #cbd5e1;
   line-height: 1.3;
+}
+
+.formula-vs {
+  font: 600 12px "DM Mono", monospace;
+  color: #64748b;
+  text-align: center;
+}
+
+/* Regras da rodada */
+.rules-card {
+  padding: 16px 18px 18px;
+}
+
+/* Botão Tutorial Guiado no Modal de Ajuda */
+.help-tutorial-cta-wrap {
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+
+.help-guided-tutorial-btn {
+  width: 100%;
+  padding: 15px 18px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255, 174, 88, 0.55);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 159, 61, 0.22) 0%,
+    rgba(255, 120, 30, 0.14) 100%
+  );
+  box-shadow: 0 4px 22px rgba(255, 140, 40, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.22s ease-out;
+  text-align: left;
+}
+
+.help-guided-tutorial-btn:hover {
+  transform: translateY(-2px);
+  border-color: #ffb461;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 159, 61, 0.32) 0%,
+    rgba(255, 120, 30, 0.22) 100%
+  );
+  box-shadow: 0 8px 30px rgba(255, 140, 40, 0.35);
+}
+
+.btn-icon-pulse {
+  width: 44px;
+  height: 44px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #ff9f3d, #ea580c);
+  color: #0b1928;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(234, 88, 12, 0.45);
+}
+
+.btn-text-block {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.btn-main-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.btn-sub-label {
+  font-size: 11.5px;
+  color: #cbdbe9;
+  line-height: 1.35;
+}
+
+.btn-arrow {
+  color: #ffb461;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.help-guided-tutorial-btn:hover .btn-arrow {
+  transform: translateX(4px);
+}
+
+/* =========================================
+   TUTORIAL GUIADO INTERATIVO (OVERLAY & CALLOUTS)
+   ========================================= */
+.tutorial-overlay-container {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 24px;
+}
+
+.tutorial-backdrop-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: auto;
+  cursor: pointer;
+  animation: tutorial-fade-in 0.25s ease-out both;
+}
+
+.tutorial-backdrop-svg {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
+
+.tutorial-spotlight-border {
+  filter: drop-shadow(0 0 10px rgba(255, 180, 97, 0.7));
+  animation: spotlight-pulse 2s infinite ease-in-out;
+}
+
+@keyframes spotlight-pulse {
+  0%, 100% {
+    stroke: #ffb461;
+    filter: drop-shadow(0 0 8px rgba(255, 180, 97, 0.6));
+  }
+  50% {
+    stroke: #ffd49c;
+    filter: drop-shadow(0 0 18px rgba(255, 180, 97, 0.95));
+  }
+}
+
+@keyframes tutorial-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.tutorial-callout-card {
+  position: relative;
+  z-index: 52;
+  pointer-events: auto;
+  width: min(100%, 540px);
+  padding: 20px 22px 18px;
+  border-radius: 12px;
+  background: linear-gradient(
+    145deg,
+    rgba(14, 32, 54, 0.98),
+    rgba(7, 18, 32, 0.98)
+  );
+  border: 1.5px solid rgba(255, 180, 97, 0.6);
+  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.75), 0 0 35px rgba(255, 160, 60, 0.22);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: callout-pop-up 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes callout-pop-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.tutorial-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tutorial-step-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 5px;
+  background: rgba(255, 174, 88, 0.16);
+  border: 1px solid rgba(255, 174, 88, 0.35);
+  color: #ffad55;
+  font: 600 10.5px/1 "DM Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tutorial-dismiss-btn {
+  background: transparent;
+  border: 0;
+  color: #94a3b8;
+  font-size: 24px;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tutorial-dismiss-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffad55;
+}
+
+.tutorial-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.01em;
+}
+
+.tutorial-desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #cbd5e1;
+}
+
+.tutorial-tip-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 6px;
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 3px solid #f59e0b;
+  color: #fde68a;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.tutorial-tip-line .tip-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #fbbf24;
+}
+
+.tutorial-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(202, 217, 243, 0.1);
+}
+
+.tutorial-step-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 0;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.step-dot.is-done {
+  background: rgba(255, 174, 88, 0.5);
+}
+
+.step-dot.is-active {
+  width: 20px;
+  border-radius: 4px;
+  background: #ff9f3d;
+  box-shadow: 0 0 8px rgba(255, 159, 61, 0.6);
+}
+
+.tutorial-nav-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tutorial-nav-btn {
+  padding: 7px 13px;
+  border-radius: 6px;
+  font-family: "DM Mono", monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tutorial-nav-btn.back {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #cbd5e1;
+}
+
+.tutorial-nav-btn.back:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.tutorial-nav-btn.next {
+  background: #ff9f3d;
+  border: 1px solid #ffb15e;
+  color: #0b1a2d;
+  box-shadow: 0 2px 10px rgba(255, 159, 61, 0.3);
+}
+
+.tutorial-nav-btn.next:hover {
+  background: #ffb15e;
+  transform: translateY(-1px);
+}
+
+.tutorial-nav-btn.finish {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: 1px solid #34d399;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+}
+
+.tutorial-nav-btn.finish:hover {
+  background: #10b981;
+  transform: translateY(-1px);
+}
+
+/* Spotlight ativo no elemento alvo do tutorial */
+.tutorial-highlight-target {
+  position: relative !important;
+  z-index: 45 !important;
+  box-shadow: 0 0 0 3px #ffb461, 0 0 36px rgba(255, 180, 97, 0.6) !important;
+  animation: tutorial-pulse 2s infinite !important;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+.task-panel.tutorial-highlight-target,
+.market-panel.tutorial-highlight-target,
+.wallet.tutorial-highlight-target {
+  background: rgba(12, 28, 46, 0.98) !important;
+}
+
+@keyframes tutorial-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px #ffb461, 0 0 28px rgba(255, 180, 97, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 4.5px #ffcb8c, 0 0 44px rgba(255, 180, 97, 0.75);
+  }
 }
 .help-footer {
   max-width: 500px !important;
@@ -2292,11 +2976,40 @@ button:focus-visible {
   .help-step > span {
     margin: 2px 0 0;
   }
-  .why-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .highlighter-legend-grid {
+    grid-template-columns: 1fr 1fr;
   }
-  .prompt-example code {
-    font-size: 10px;
+  .cost-pills-row {
+    grid-template-columns: 1fr;
+  }
+  .formula-comparison {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .formula-vs {
+    display: none;
+  }
+  .tutorial-overlay-container {
+    padding: 12px;
+  }
+  .tutorial-callout-card {
+    padding: 15px 16px 14px;
+  }
+  .tutorial-title {
+    font-size: 15px;
+  }
+  .tutorial-desc {
+    font-size: 12px;
+  }
+  .help-guided-tutorial-btn {
+    padding: 12px 14px;
+  }
+  .btn-icon-pulse {
+    width: 38px;
+    height: 38px;
+  }
+  .btn-main-label {
+    font-size: 14.5px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -2532,6 +3245,165 @@ button:focus-visible {
 }
 .trap-warning.is-redundancy b {
   color: #ffd2a3;
+}
+
+.trap-warning.is-trap-card {
+  border-color: rgba(244, 63, 94, 0.38);
+  background: rgba(80, 18, 24, 0.35);
+  color: #fecdd3;
+}
+.trap-warning.is-trap-card svg {
+  color: #f43f5e;
+}
+.trap-warning.is-trap-card b {
+  color: #ffe4e6;
+}
+
+/* Sinergia de Armadilha Revelada */
+.trap-synergy-reveal {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 13px 15px;
+  background: linear-gradient(
+    135deg,
+    rgba(88, 24, 20, 0.5) 0%,
+    rgba(44, 14, 12, 0.6) 100%
+  );
+  border: 1px solid rgba(244, 63, 94, 0.45);
+  border-radius: 8px;
+  margin-top: 10px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+  animation: reveal-in 0.3s ease-out both;
+}
+
+.trap-synergy-icon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  background: rgba(244, 63, 94, 0.2);
+  border: 1px solid rgba(244, 63, 94, 0.5);
+  color: #f43f5e;
+  border-radius: 50%;
+  flex: none;
+}
+
+.trap-synergy-reveal > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.trap-synergy-tag {
+  color: #fb7185;
+  font: 600 8.5px/1 "DM Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.trap-synergy-reveal strong {
+  font-size: 13px;
+  color: #ffe4e6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trap-synergy-reveal strong b {
+  color: #f43f5e;
+  font: 600 11px "DM Mono", monospace;
+  background: rgba(244, 63, 94, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+.trap-synergy-reveal p {
+  color: #fecdd3;
+  font-size: 11.5px;
+  margin: 2px 0 0;
+  line-height: 1.45;
+}
+
+.trap-synergy-reveal p b {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Alertas de Armadilha na Seleção (Deck e Mercado) */
+.deck-trap-synergy-banner {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(80, 20, 24, 0.55), rgba(45, 10, 14, 0.65));
+  border: 1px solid rgba(244, 63, 94, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  animation: reveal-in 0.25s ease-out;
+}
+
+.deck-trap-synergy-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #f43f5e;
+  font: 600 10.5px/1 "DM Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.deck-trap-synergy-banner p {
+  font-size: 11px;
+  color: #fecdd3;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.deck-trap-synergy-banner small {
+  font-size: 10px;
+  color: #fda4af;
+  line-height: 1.4;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 6px 8px;
+  border-radius: 5px;
+  border-left: 2px solid #f43f5e;
+}
+
+.market-trap-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 13px;
+  border-radius: 7px;
+  background: rgba(80, 18, 24, 0.45);
+  border: 1px solid rgba(244, 63, 94, 0.45);
+  color: #fecdd3;
+  font-size: 11.5px;
+  line-height: 1.35;
+  animation: reveal-in 0.2s ease-out;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.market-trap-alert svg {
+  color: #f43f5e;
+  flex-shrink: 0;
+}
+
+.market-trap-alert strong {
+  display: block;
+  font-size: 11.5px;
+  color: #ffe4e6;
+}
+
+.market-trap-alert span {
+  display: block;
+  font-size: 10.5px;
+  color: #fecdd3;
 }
 .seal-wrap {
   position: relative;
