@@ -1037,6 +1037,120 @@ const CARDS: Card[] = [
     symbol: "◇",
     trap: true,
   },
+  // --- RAG & DOCUMENTOS ---
+  {
+    id: "rag_table",
+    label: "Anexar Tabela de Dados",
+    type: "RAG",
+    description: "Fornece dados tabulares estruturados como fonte da verdade.",
+    cost: 3,
+    quality: 10,
+    tags: ["rag", "evidence", "specific"],
+    symbol: "⛁",
+  },
+  {
+    id: "rag_source",
+    label: "Referenciar Fonte Confiável",
+    type: "RAG",
+    description: "Instrui o modelo a citar e embasar respostas em fontes validadas.",
+    cost: 3,
+    quality: 9,
+    tags: ["rag", "evidence", "context"],
+    symbol: "§",
+  },
+  {
+    id: "rag_legacy",
+    label: "Trecho de Código Legado",
+    type: "RAG",
+    description: "Anexa código ou documentação técnica como contexto de referência.",
+    cost: 4,
+    quality: 11,
+    tags: ["rag", "specific", "brief"],
+    symbol: "☷",
+  },
+  // --- GUARDRAILS & SEGURANÇA ---
+  {
+    id: "guardrail_jailbreak",
+    label: "Anti-Jailbreak",
+    type: "SEGURANÇA",
+    description: "Impede o desvio de persona e tentativas de contornar instruções.",
+    cost: 3,
+    quality: 10,
+    tags: ["safety", "constraint"],
+    symbol: "🛡",
+  },
+  {
+    id: "guardrail_bias",
+    label: "Filtro de Viés",
+    type: "SEGURANÇA",
+    description: "Garante neutralidade, diversidade e conformidade ética na resposta.",
+    cost: 2,
+    quality: 8,
+    tags: ["safety", "tone", "constraint"],
+    symbol: "⛨",
+  },
+  {
+    id: "guardrail_negative",
+    label: "Instrução Negativa Explícita",
+    type: "SEGURANÇA",
+    description: "Define o que a IA NUNCA deve mencionar, assumir ou inventar.",
+    cost: 2,
+    quality: 9,
+    tags: ["safety", "constraint", "specific"],
+    symbol: "⌧",
+  },
+  // --- TOOL USE & FUNCTION CALLING ---
+  {
+    id: "tool_api",
+    label: "Declaração de API",
+    type: "TOOLS",
+    description: "Estrutura a resposta como um schema/payload de chamada de API externa.",
+    cost: 4,
+    quality: 11,
+    tags: ["tool", "structure", "specific"],
+    symbol: "⌬",
+  },
+  {
+    id: "tool_external",
+    label: "Chamada de Ferramenta Externa",
+    type: "TOOLS",
+    description: "Permite à IA delegar buscas ou cálculos para ferramentas auxiliares.",
+    cost: 3,
+    quality: 10,
+    tags: ["tool", "evidence", "brief"],
+    symbol: "⚙",
+  },
+  // --- TÉCNICAS DE RACIOCÍNIO AVANÇADO ---
+  {
+    id: "reasoning_tot",
+    label: "Tree of Thoughts (ToT)",
+    type: "RACIOCÍNIO",
+    description: "Explora múltiplos caminhos de raciocínio e ramos de decisão antes de concluir.",
+    cost: 5,
+    quality: 13,
+    tags: ["reasoning", "structure", "evidence"],
+    symbol: "⑂",
+  },
+  {
+    id: "reasoning_devil",
+    label: "Advogado do Diabo",
+    type: "RACIOCÍNIO",
+    description: "Simula contra-argumentos e cenários adversos para testar a robustez.",
+    cost: 4,
+    quality: 11,
+    tags: ["reasoning", "evidence", "context"],
+    symbol: "⚖",
+  },
+  {
+    id: "reasoning_step",
+    label: "Refinamento Passo a Passo",
+    type: "RACIOCÍNIO",
+    description: "Subdivide a execução em micro-etapas iterativas com checagem de qualidade.",
+    cost: 3,
+    quality: 10,
+    tags: ["reasoning", "structure", "specific"],
+    symbol: "↻",
+  },
 ];
 
 const PERSONALITIES: Personality[] = [
@@ -1049,7 +1163,7 @@ const PERSONALITIES: Personality[] = [
   },
   {
     name: "Nexo",
-    title: "estrategista",
+  title: "estrategista",
     detail: "Lê os sinais da tarefa e caça sinergias.",
     icon: Target,
     color: "blue",
@@ -1095,7 +1209,15 @@ const hasTypes = (cards: Card[], types: string[]) =>
   types.every(type => cards.some(card => card.type === type));
 
 /** Tipos cuja repetição é intencional e já premiada por sinergias próprias. */
-const REDUNDANCY_EXEMPT = new Set(["EXEMPLO", "ESTRATÉGIA", "QUALIDADE"]);
+const REDUNDANCY_EXEMPT = new Set([
+  "EXEMPLO",
+  "ESTRATÉGIA",
+  "QUALIDADE",
+  "RAG",
+  "SEGURANÇA",
+  "TOOLS",
+  "RACIOCÍNIO",
+]);
 
 /** Conta apenas as repetições realmente penalizáveis. */
 function getRedundantTypes(cards: Card[]) {
@@ -1354,6 +1476,180 @@ const LIBRARY_SYNERGIES: LibrarySynergy[] = [
       hasTypes(cards, ["CONTEXTO", "PÚBLICO", "FORMATO"]) &&
       hasTags(cards, ["brief", "specific"]),
   },
+  // --- NOVAS SINERGIAS: RAG, SEGURANÇA, TOOLS, RACIOCÍNIO & COMBOS HÍBRIDOS ---
+  {
+    id: "rag-grounding",
+    label: "Grounding RAG",
+    category: "RAG",
+    requirement: "2 ou mais cartas de RAG",
+    detail:
+      "Ancoragem factual e citação de fontes eliminam alucinações e trazem lastro ao contexto.",
+    bonus: 22,
+    matches: cards => cards.filter(card => card.type === "RAG").length >= 2,
+  },
+  {
+    id: "safety-shield",
+    label: "Blindagem de Segurança",
+    category: "SEGURANÇA",
+    requirement: "2 ou mais cartas de Segurança",
+    detail:
+      "Guardrails e restrições negativas criam um escudo contra jailbreaks e desvios de conduta.",
+    bonus: 20,
+    matches: cards =>
+      cards.filter(card => card.type === "SEGURANÇA").length >= 2,
+  },
+  {
+    id: "tool-orchestration",
+    label: "Orquestração de Ferramentas",
+    category: "TOOLS",
+    requirement: "2 cartas de Ferramentas (API + Chamada)",
+    detail:
+      "Capacita o modelo para agir sobre o mundo real através de chamadas estruturadas de ferramentas.",
+    bonus: 25,
+    matches: cards => cards.filter(card => card.type === "TOOLS").length >= 2,
+  },
+  {
+    id: "tot-critical-tree",
+    label: "Árvore Crítica de Raciocínio",
+    category: "RACIOCÍNIO",
+    requirement: "Tree of Thoughts + (Advogado do Diabo ou Refinamento)",
+    detail:
+      "Exploração de hipóteses combinada com contraposição crítica eleva o raciocínio a nível especialista.",
+    bonus: 28,
+    matches: cards =>
+      cards.some(card => card.id === "reasoning_tot") &&
+      cards.some(
+        card =>
+          card.id === "reasoning_devil" || card.id === "reasoning_step"
+      ),
+  },
+  {
+    id: "agentic-architecture",
+    label: "Arquitetura Agêntica Completa",
+    category: "LENDÁRIO",
+    requirement: "1 RAG + 1 TOOLS + 1 RACIOCÍNIO (ou CoT)",
+    detail:
+      "O combo supremo de IA: Contexto documental, raciocínio profundo e integração com ferramentas externas.",
+    bonus: 38,
+    matches: cards =>
+      cards.some(card => card.type === "RAG") &&
+      cards.some(card => card.type === "TOOLS") &&
+      cards.some(
+        card =>
+          card.type === "RACIOCÍNIO" ||
+          card.id.startsWith("chain_of_thought")
+      ),
+  },
+  {
+    id: "react-pattern",
+    label: "Engenharia ReAct (Reason + Act)",
+    category: "AGENTE",
+    requirement: "(Tree of Thoughts ou CoT) + (Ferramenta ou API)",
+    detail:
+      "O padrão ReAct alterna raciocínio explícito com execução de ferramentas para resolver problemas dinâmicos.",
+    bonus: 30,
+    matches: cards =>
+      cards.some(
+        card =>
+          card.type === "RACIOCÍNIO" ||
+          card.id.startsWith("chain_of_thought")
+      ) && cards.some(card => card.type === "TOOLS"),
+  },
+  {
+    id: "factual-grounding",
+    label: "Validação Factual Estrita",
+    category: "EVIDÊNCIA",
+    requirement: "1 carta RAG + (Dados e números ou Citar frase-chave)",
+    detail:
+      "Vincular métricas concretas e citações diretas a fontes de dados elimina completamente suposições inventadas.",
+    bonus: 24,
+    matches: cards =>
+      cards.some(card => card.type === "RAG") &&
+      cards.some(card => card.id === "numbers" || card.id === "quote"),
+  },
+  {
+    id: "api-contract",
+    label: "Contrato de API Estruturado",
+    category: "ESTRUTURA",
+    requirement: "Declaração de API + Formato de saída",
+    detail:
+      "Declarar schemas de API com formatos de saída explícitos garante respostas 100% integráveis sem erros de parsing.",
+    bonus: 22,
+    matches: cards =>
+      cards.some(card => card.id === "tool_api") &&
+      cards.some(card => card.type === "FORMATO"),
+  },
+  {
+    id: "dialectical-debate",
+    label: "Debate Dialético Especialista",
+    category: "ESTRATÉGIA",
+    requirement: "Persona + Advogado do Diabo + Antecipar objeções",
+    detail:
+      "Uma persona experiente simulando objeções e contra-ataques cria uma análise estratégica blindada contra falhas.",
+    bonus: 32,
+    matches: cards =>
+      cards.some(card => card.type === "PERSONA") &&
+      cards.some(card => card.id === "reasoning_devil") &&
+      cards.some(card => card.id === "objection"),
+  },
+  {
+    id: "self-correction-loop",
+    label: "Loop de Auto-Correção",
+    category: "QUALIDADE",
+    requirement: "Refinamento Passo a Passo + Autoavaliação",
+    detail:
+      "Dividir a tarefa em micro-passos e submeter cada etapa a uma auto-revisão crítica maximiza a precisão do resultado.",
+    bonus: 25,
+    matches: cards =>
+      cards.some(card => card.id === "reasoning_step") &&
+      cards.some(card => card.id.startsWith("self_eval")),
+  },
+  {
+    id: "safe-institutional-tone",
+    label: "Comunicação Segura & Institucional",
+    category: "TOM",
+    requirement: "1 Segurança + (Voz da marca ou Tom formal/técnico) + Público",
+    detail:
+      "Alinhar o tom institucional com guardrails de conformidade e foco no leitor protege a reputação da marca.",
+    bonus: 26,
+    matches: cards =>
+      cards.some(card => card.type === "SEGURANÇA") &&
+      cards.some(
+        card =>
+          card.id === "voice" ||
+          card.id === "formal" ||
+          card.id === "professional"
+      ) &&
+      cards.some(card => card.type === "PÚBLICO"),
+  },
+  {
+    id: "rag-few-shot",
+    label: "RAG Exemplificado (Few-Shot Grounding)",
+    category: "EXEMPLOS",
+    requirement: "1 carta RAG + 1 carta de Exemplo",
+    detail:
+      "Demonstrar com exemplos concretos como consultar e interpretar a fonte de dados acelera a precisão de extração.",
+    bonus: 24,
+    matches: cards =>
+      cards.some(card => card.type === "RAG") &&
+      cards.some(
+        card => card.type === "EXEMPLO" || card.tags.includes("example")
+      ),
+  },
+  {
+    id: "secure-code-audit",
+    label: "Auditoria Segura de Código",
+    category: "SEGURANÇA",
+    requirement:
+      "Trecho de Código Legado + 1 Segurança + (Sinalizar riscos ou Critérios)",
+    detail:
+      "Analisar código com restrições rígidas de segurança e mapeamento de riscos previne injeções de código e vulnerabilidades.",
+    bonus: 28,
+    matches: cards =>
+      cards.some(card => card.id === "rag_legacy") &&
+      cards.some(card => card.type === "SEGURANÇA") &&
+      cards.some(card => card.id === "risk" || card.id === "criteria"),
+  },
 ];
 
 function seeded(seed: number) {
@@ -1474,7 +1770,7 @@ function buildRound(
     ...randomizedCards.filter(card => !guaranteedIds.has(card.id)),
   ];
 
-  const market = marketPool.slice(0, 14).map(card => ({
+  const market = marketPool.slice(0, 16).map(card => ({
     ...card,
     liveCost: card.trap
       ? Math.max(3, Math.round(card.cost * (1 + Math.random() * 0.3)))
@@ -1608,6 +1904,144 @@ function evaluate(
         chainCount > 1
           ? `${chainCount} etapas encadeadas acumulando valor (+${chainBonus}) a partir da resposta do prompt anterior.`
           : "Encadeia uma nova etapa a partir da resposta do prompt anterior (+10).",
+    });
+  }
+
+  // --- NOVAS SINERGIAS ESPECIAIS & COMBOS HÍBRIDOS ---
+  const ragCount = cards.filter(c => c.type === "RAG").length;
+  const safetyCount = cards.filter(c => c.type === "SEGURANÇA").length;
+  const toolCount = cards.filter(c => c.type === "TOOLS").length;
+  const hasToT = cards.some(c => c.id === "reasoning_tot");
+  const hasDevil = cards.some(c => c.id === "reasoning_devil");
+  const hasStep = cards.some(c => c.id === "reasoning_step");
+  const hasReasoning =
+    cards.some(c => c.type === "RACIOCÍNIO") || hasCoT || hasToT;
+
+  // 1. Grounding RAG (+22)
+  if (ragCount >= 2) {
+    specialSynergies.push({
+      label: "Grounding RAG",
+      bonus: 22,
+      note: "Ancoragem factual e citação de fontes eliminam alucinações e trazem lastro ao contexto.",
+    });
+  }
+
+  // 2. Blindagem de Segurança (+20)
+  if (safetyCount >= 2) {
+    specialSynergies.push({
+      label: "Blindagem de Segurança",
+      bonus: 20,
+      note: "Guardrails e restrições negativas criam um escudo contra jailbreaks e desvios de conduta.",
+    });
+  }
+
+  // 3. Orquestração de Ferramentas (+25)
+  if (toolCount >= 2) {
+    specialSynergies.push({
+      label: "Orquestração de Ferramentas",
+      bonus: 25,
+      note: "Capacita o modelo para agir sobre o mundo real através de chamadas estruturadas de ferramentas.",
+    });
+  }
+
+  // 4. Árvore Crítica de Raciocínio (+28)
+  if (hasToT && (hasDevil || hasStep)) {
+    specialSynergies.push({
+      label: "Árvore Crítica de Raciocínio",
+      bonus: 28,
+      note: "Exploração de hipóteses combinada com contraposição crítica eleva o raciocínio a nível especialista.",
+    });
+  }
+
+  // 5. Arquitetura Agêntica Completa (Super Combo +38)
+  if (ragCount >= 1 && toolCount >= 1 && hasReasoning) {
+    specialSynergies.push({
+      label: "Arquitetura Agêntica Completa",
+      bonus: 38,
+      note: "O combo supremo de IA: Contexto documental, raciocínio profundo e integração com ferramentas externas.",
+    });
+  }
+
+  // 6. Engenharia ReAct (+30) - quando não ativou a arquitetura completa para evitar sobreposição excessiva
+  if (hasReasoning && toolCount >= 1 && !(ragCount >= 1 && toolCount >= 1 && hasReasoning)) {
+    specialSynergies.push({
+      label: "Engenharia ReAct (Reason + Act)",
+      bonus: 30,
+      note: "O padrão ReAct alterna raciocínio explícito com execução de ferramentas para resolver problemas dinâmicos.",
+    });
+  }
+
+  // 7. Validação Factual Estrita (+24)
+  const hasFactualData = cards.some(c => c.id === "numbers" || c.id === "quote");
+  if (ragCount >= 1 && hasFactualData) {
+    specialSynergies.push({
+      label: "Validação Factual Estrita",
+      bonus: 24,
+      note: "Vincular métricas concretas e citações diretas a fontes de dados elimina completamente suposições inventadas.",
+    });
+  }
+
+  // 8. Contrato de API Estruturado (+22)
+  const hasApi = cards.some(c => c.id === "tool_api");
+  const hasFormat = cards.some(c => c.type === "FORMATO");
+  if (hasApi && hasFormat) {
+    specialSynergies.push({
+      label: "Contrato de API Estruturado",
+      bonus: 22,
+      note: "Declarar schemas de API com formatos de saída explícitos garante respostas 100% integráveis sem erros de parsing.",
+    });
+  }
+
+  // 9. Debate Dialético Especialista (+32)
+  const hasPersona = cards.some(c => c.type === "PERSONA");
+  const hasObjection = cards.some(c => c.id === "objection");
+  if (hasPersona && hasDevil && hasObjection) {
+    specialSynergies.push({
+      label: "Debate Dialético Especialista",
+      bonus: 32,
+      note: "Uma persona experiente simulando objeções e contra-ataques cria uma análise estratégica blindada contra falhas.",
+    });
+  }
+
+  // 10. Loop de Auto-Correção (+25)
+  if (hasStep && hasSelfEval) {
+    specialSynergies.push({
+      label: "Loop de Auto-Correção",
+      bonus: 25,
+      note: "Dividir a tarefa em micro-passos e submeter cada etapa a uma auto-revisão crítica maximiza a precisão do resultado.",
+    });
+  }
+
+  // 11. Comunicação Segura & Institucional (+26)
+  const hasInstitutionalTone = cards.some(
+    c => c.id === "voice" || c.id === "formal" || c.id === "professional"
+  );
+  const hasAudience = cards.some(c => c.type === "PÚBLICO");
+  if (safetyCount >= 1 && hasInstitutionalTone && hasAudience) {
+    specialSynergies.push({
+      label: "Comunicação Segura & Institucional",
+      bonus: 26,
+      note: "Alinhar o tom institucional com guardrails de conformidade e foco no leitor protege a reputação da marca.",
+    });
+  }
+
+  // 12. RAG Exemplificado / Few-Shot Grounding (+24)
+  if (ragCount >= 1 && (exampleCount >= 1 || cards.some(c => c.type === "EXEMPLO"))) {
+    specialSynergies.push({
+      label: "RAG Exemplificado (Few-Shot Grounding)",
+      bonus: 24,
+      note: "Demonstrar com exemplos concretos como consultar e interpretar a fonte de dados acelera a precisão de extração.",
+    });
+  }
+
+  // 13. Auditoria Segura de Código (+28)
+  const hasLegacy = cards.some(c => c.id === "rag_legacy");
+  const hasRiskOrCriteria = cards.some(c => c.id === "risk" || c.id === "criteria");
+  if (hasLegacy && safetyCount >= 1 && hasRiskOrCriteria) {
+    specialSynergies.push({
+      label: "Auditoria Segura de Código",
+      bonus: 28,
+      note: "Analisar código com restrições rígidas de segurança e mapeamento de riscos previne injeções de código e vulnerabilidades.",
     });
   }
 
