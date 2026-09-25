@@ -1052,7 +1052,8 @@ const CARDS: Card[] = [
     id: "rag_source",
     label: "Referenciar Fonte Confiável",
     type: "RAG",
-    description: "Instrui o modelo a citar e embasar respostas em fontes validadas.",
+    description:
+      "Instrui o modelo a citar e embasar respostas em fontes validadas.",
     cost: 3,
     quality: 9,
     tags: ["rag", "evidence", "context"],
@@ -1062,7 +1063,8 @@ const CARDS: Card[] = [
     id: "rag_legacy",
     label: "Trecho de Código Legado",
     type: "RAG",
-    description: "Anexa código ou documentação técnica como contexto de referência.",
+    description:
+      "Anexa código ou documentação técnica como contexto de referência.",
     cost: 4,
     quality: 11,
     tags: ["rag", "specific", "brief"],
@@ -1073,7 +1075,8 @@ const CARDS: Card[] = [
     id: "guardrail_jailbreak",
     label: "Anti-Jailbreak",
     type: "SEGURANÇA",
-    description: "Impede o desvio de persona e tentativas de contornar instruções.",
+    description:
+      "Impede o desvio de persona e tentativas de contornar instruções.",
     cost: 3,
     quality: 10,
     tags: ["safety", "constraint"],
@@ -1083,7 +1086,8 @@ const CARDS: Card[] = [
     id: "guardrail_bias",
     label: "Filtro de Viés",
     type: "SEGURANÇA",
-    description: "Garante neutralidade, diversidade e conformidade ética na resposta.",
+    description:
+      "Garante neutralidade, diversidade e conformidade ética na resposta.",
     cost: 2,
     quality: 8,
     tags: ["safety", "tone", "constraint"],
@@ -1104,7 +1108,8 @@ const CARDS: Card[] = [
     id: "tool_api",
     label: "Declaração de API",
     type: "TOOLS",
-    description: "Estrutura a resposta como um schema/payload de chamada de API externa.",
+    description:
+      "Estrutura a resposta como um schema/payload de chamada de API externa.",
     cost: 4,
     quality: 11,
     tags: ["tool", "structure", "specific"],
@@ -1114,7 +1119,8 @@ const CARDS: Card[] = [
     id: "tool_external",
     label: "Chamada de Ferramenta Externa",
     type: "TOOLS",
-    description: "Permite à IA delegar buscas ou cálculos para ferramentas auxiliares.",
+    description:
+      "Permite à IA delegar buscas ou cálculos para ferramentas auxiliares.",
     cost: 3,
     quality: 10,
     tags: ["tool", "evidence", "brief"],
@@ -1125,7 +1131,8 @@ const CARDS: Card[] = [
     id: "reasoning_tot",
     label: "Tree of Thoughts (ToT)",
     type: "RACIOCÍNIO",
-    description: "Explora múltiplos caminhos de raciocínio e ramos de decisão antes de concluir.",
+    description:
+      "Explora múltiplos caminhos de raciocínio e ramos de decisão antes de concluir.",
     cost: 5,
     quality: 13,
     tags: ["reasoning", "structure", "evidence"],
@@ -1135,7 +1142,8 @@ const CARDS: Card[] = [
     id: "reasoning_devil",
     label: "Advogado do Diabo",
     type: "RACIOCÍNIO",
-    description: "Simula contra-argumentos e cenários adversos para testar a robustez.",
+    description:
+      "Simula contra-argumentos e cenários adversos para testar a robustez.",
     cost: 4,
     quality: 11,
     tags: ["reasoning", "evidence", "context"],
@@ -1145,7 +1153,8 @@ const CARDS: Card[] = [
     id: "reasoning_step",
     label: "Refinamento Passo a Passo",
     type: "RACIOCÍNIO",
-    description: "Subdivide a execução em micro-etapas iterativas com checagem de qualidade.",
+    description:
+      "Subdivide a execução em micro-etapas iterativas com checagem de qualidade.",
     cost: 3,
     quality: 10,
     tags: ["reasoning", "structure", "specific"],
@@ -1163,7 +1172,7 @@ const PERSONALITIES: Personality[] = [
   },
   {
     name: "Nexo",
-  title: "estrategista",
+    title: "estrategista",
     detail: "Lê os sinais da tarefa e caça sinergias.",
     icon: Target,
     color: "blue",
@@ -1519,8 +1528,7 @@ const LIBRARY_SYNERGIES: LibrarySynergy[] = [
     matches: cards =>
       cards.some(card => card.id === "reasoning_tot") &&
       cards.some(
-        card =>
-          card.id === "reasoning_devil" || card.id === "reasoning_step"
+        card => card.id === "reasoning_devil" || card.id === "reasoning_step"
       ),
   },
   {
@@ -1536,8 +1544,7 @@ const LIBRARY_SYNERGIES: LibrarySynergy[] = [
       cards.some(card => card.type === "TOOLS") &&
       cards.some(
         card =>
-          card.type === "RACIOCÍNIO" ||
-          card.id.startsWith("chain_of_thought")
+          card.type === "RACIOCÍNIO" || card.id.startsWith("chain_of_thought")
       ),
   },
   {
@@ -1551,8 +1558,7 @@ const LIBRARY_SYNERGIES: LibrarySynergy[] = [
     matches: cards =>
       cards.some(
         card =>
-          card.type === "RACIOCÍNIO" ||
-          card.id.startsWith("chain_of_thought")
+          card.type === "RACIOCÍNIO" || card.id.startsWith("chain_of_thought")
       ) && cards.some(card => card.type === "TOOLS"),
   },
   {
@@ -1963,7 +1969,11 @@ function evaluate(
   }
 
   // 6. Engenharia ReAct (+30) - quando não ativou a arquitetura completa para evitar sobreposição excessiva
-  if (hasReasoning && toolCount >= 1 && !(ragCount >= 1 && toolCount >= 1 && hasReasoning)) {
+  if (
+    hasReasoning &&
+    toolCount >= 1 &&
+    !(ragCount >= 1 && toolCount >= 1 && hasReasoning)
+  ) {
     specialSynergies.push({
       label: "Engenharia ReAct (Reason + Act)",
       bonus: 30,
@@ -1972,7 +1982,9 @@ function evaluate(
   }
 
   // 7. Validação Factual Estrita (+24)
-  const hasFactualData = cards.some(c => c.id === "numbers" || c.id === "quote");
+  const hasFactualData = cards.some(
+    c => c.id === "numbers" || c.id === "quote"
+  );
   if (ragCount >= 1 && hasFactualData) {
     specialSynergies.push({
       label: "Validação Factual Estrita",
@@ -2026,7 +2038,10 @@ function evaluate(
   }
 
   // 12. RAG Exemplificado / Few-Shot Grounding (+24)
-  if (ragCount >= 1 && (exampleCount >= 1 || cards.some(c => c.type === "EXEMPLO"))) {
+  if (
+    ragCount >= 1 &&
+    (exampleCount >= 1 || cards.some(c => c.type === "EXEMPLO"))
+  ) {
     specialSynergies.push({
       label: "RAG Exemplificado (Few-Shot Grounding)",
       bonus: 24,
@@ -2036,7 +2051,9 @@ function evaluate(
 
   // 13. Auditoria Segura de Código (+28)
   const hasLegacy = cards.some(c => c.id === "rag_legacy");
-  const hasRiskOrCriteria = cards.some(c => c.id === "risk" || c.id === "criteria");
+  const hasRiskOrCriteria = cards.some(
+    c => c.id === "risk" || c.id === "criteria"
+  );
   if (hasLegacy && safetyCount >= 1 && hasRiskOrCriteria) {
     specialSynergies.push({
       label: "Auditoria Segura de Código",
@@ -3164,6 +3181,46 @@ export default function App() {
                 </span>
               </div>
             </section>
+
+            {/* Blocos de Recorde & Purificação Skull */}
+            <div className="sidebar-stats-grid">
+              <div
+                className="sidebar-stat-card record-card"
+                title="Maior recorde de eficiência alcançado por um jogador: Monique S. (3.8)"
+              >
+                <div className="stat-card-header">
+                  <div className="stat-card-icon trophy-icon">
+                    <Trophy size={13} />
+                  </div>
+                  <span className="stat-card-label">Maior Eficiência</span>
+                </div>
+                <div className="stat-card-main">
+                  <strong className="stat-card-value">
+                    13.8 <small className="stat-unit">eficiência</small>
+                  </strong>
+                  <span className="stat-card-sub">Monique S.</span>
+                </div>
+              </div>
+
+              <div
+                className="sidebar-stat-card skull-stat-card"
+                title="Jogadores que conseguiram purificar o Skull"
+              >
+                <div className="stat-card-header">
+                  <div className="stat-card-icon skull-icon">
+                    <Skull size={13} />
+                  </div>
+                  <span className="stat-card-label">Skull Purificado</span>
+                </div>
+                <div className="stat-card-main">
+                  <strong className="stat-card-value">
+                    25 <small className="stat-unit">jogadores</small>
+                  </strong>
+                  <span className="stat-card-sub">Purificaram o Skull</span>
+                </div>
+              </div>
+            </div>
+
             <button
               className="library-cta"
               title="Abrir biblioteca de sinergias"

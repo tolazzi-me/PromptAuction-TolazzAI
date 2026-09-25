@@ -2038,7 +2038,9 @@ button:focus-visible {
 
 .help-card-eyebrow {
   display: block;
-  font: 600 9px/1 "DM Mono", monospace;
+  font:
+    600 9px/1 "DM Mono",
+    monospace;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #ffad55;
@@ -2250,7 +2252,9 @@ button:focus-visible {
 }
 
 .cost-pill-badge {
-  font: 600 10px "DM Mono", monospace;
+  font:
+    600 10px "DM Mono",
+    monospace;
   color: #fde047;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -2286,7 +2290,9 @@ button:focus-visible {
   display: flex;
   align-items: center;
   gap: 6px;
-  font: 600 11px "DM Mono", monospace;
+  font:
+    600 11px "DM Mono",
+    monospace;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #ff9898;
@@ -2342,7 +2348,9 @@ button:focus-visible {
 }
 
 .formula-vs {
-  font: 600 12px "DM Mono", monospace;
+  font:
+    600 12px "DM Mono",
+    monospace;
   color: #64748b;
   text-align: center;
 }
@@ -2470,7 +2478,8 @@ button:focus-visible {
 }
 
 @keyframes spotlight-pulse {
-  0%, 100% {
+  0%,
+  100% {
     stroke: #ffb461;
     filter: drop-shadow(0 0 8px rgba(255, 180, 97, 0.6));
   }
@@ -2481,8 +2490,12 @@ button:focus-visible {
 }
 
 @keyframes tutorial-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .tutorial-callout-card {
@@ -2498,7 +2511,9 @@ button:focus-visible {
     rgba(7, 18, 32, 0.98)
   );
   border: 1.5px solid rgba(255, 180, 97, 0.6);
-  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.75), 0 0 35px rgba(255, 160, 60, 0.22);
+  box-shadow:
+    0 16px 60px rgba(0, 0, 0, 0.75),
+    0 0 35px rgba(255, 160, 60, 0.22);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -2531,7 +2546,9 @@ button:focus-visible {
   background: rgba(255, 174, 88, 0.16);
   border: 1px solid rgba(255, 174, 88, 0.35);
   color: #ffad55;
-  font: 600 10.5px/1 "DM Mono", monospace;
+  font:
+    600 10.5px/1 "DM Mono",
+    monospace;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -2686,9 +2703,13 @@ button:focus-visible {
 .tutorial-highlight-target {
   position: relative !important;
   z-index: 45 !important;
-  box-shadow: 0 0 0 3px #ffb461, 0 0 36px rgba(255, 180, 97, 0.6) !important;
+  box-shadow:
+    0 0 0 3px #ffb461,
+    0 0 36px rgba(255, 180, 97, 0.6) !important;
   animation: tutorial-pulse 2s infinite !important;
-  transition: box-shadow 0.3s ease, border-color 0.3s ease !important;
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease !important;
 }
 
 .task-panel.tutorial-highlight-target,
@@ -2698,11 +2719,16 @@ button:focus-visible {
 }
 
 @keyframes tutorial-pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 3px #ffb461, 0 0 28px rgba(255, 180, 97, 0.45);
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 3px #ffb461,
+      0 0 28px rgba(255, 180, 97, 0.45);
   }
   50% {
-    box-shadow: 0 0 0 4.5px #ffcb8c, 0 0 44px rgba(255, 180, 97, 0.75);
+    box-shadow:
+      0 0 0 4.5px #ffcb8c,
+      0 0 44px rgba(255, 180, 97, 0.75);
   }
 }
 .help-footer {
@@ -3299,7 +3325,9 @@ button:focus-visible {
 
 .trap-synergy-tag {
   color: #fb7185;
-  font: 600 8.5px/1 "DM Mono", monospace;
+  font:
+    600 8.5px/1 "DM Mono",
+    monospace;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -3314,7 +3342,9 @@ button:focus-visible {
 
 .trap-synergy-reveal strong b {
   color: #f43f5e;
-  font: 600 11px "DM Mono", monospace;
+  font:
+    600 11px "DM Mono",
+    monospace;
   background: rgba(244, 63, 94, 0.15);
   padding: 2px 6px;
   border-radius: 4px;
@@ -3338,7 +3368,11 @@ button:focus-visible {
   margin-top: 10px;
   padding: 10px 12px;
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(80, 20, 24, 0.55), rgba(45, 10, 14, 0.65));
+  background: linear-gradient(
+    135deg,
+    rgba(80, 20, 24, 0.55),
+    rgba(45, 10, 14, 0.65)
+  );
   border: 1px solid rgba(244, 63, 94, 0.45);
   display: flex;
   flex-direction: column;
@@ -3351,7 +3385,9 @@ button:focus-visible {
   align-items: center;
   gap: 6px;
   color: #f43f5e;
-  font: 600 10.5px/1 "DM Mono", monospace;
+  font:
+    600 10.5px/1 "DM Mono",
+    monospace;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -3784,11 +3820,7 @@ button:focus-visible {
 .black-persist-particles span {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(244, 63, 94, 0.25),
-    transparent 70%
-  );
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.25), transparent 70%);
   filter: blur(12px);
   animation: float-abyss 7s ease-in-out infinite;
 }
@@ -4529,4 +4561,162 @@ button:focus-visible {
 
 .white-dismissed-banner svg {
   color: #d97706;
+}
+
+/* Sidebar Community Records & Purified Stats */
+.sidebar-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: -2px 0 2px;
+}
+
+.sidebar-stat-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 9px 10px;
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+.sidebar-stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
+}
+
+.sidebar-stat-card.record-card {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 179, 0, 0.09) 0%,
+    rgba(10, 24, 43, 0.85) 100%
+  );
+  border: 1px solid rgba(255, 193, 7, 0.26);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.22),
+    inset 0 0 12px rgba(255, 179, 0, 0.04);
+}
+
+.sidebar-stat-card.record-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 204, 0, 0.55);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.3),
+    0 0 14px rgba(255, 180, 0, 0.2);
+}
+
+.sidebar-stat-card.skull-stat-card {
+  background: linear-gradient(
+    145deg,
+    rgba(168, 85, 247, 0.1) 0%,
+    rgba(10, 20, 38, 0.85) 100%
+  );
+  border: 1px solid rgba(168, 85, 247, 0.28);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.22),
+    inset 0 0 12px rgba(168, 85, 247, 0.04);
+}
+
+.sidebar-stat-card.skull-stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(192, 132, 252, 0.55);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.3),
+    0 0 14px rgba(168, 85, 247, 0.22);
+}
+
+.stat-card-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.stat-card-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.stat-card-icon.trophy-icon {
+  background: rgba(255, 180, 0, 0.18);
+  color: #ffc837;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.stat-card-icon.skull-icon {
+  background: rgba(168, 85, 247, 0.2);
+  color: #d8b4fe;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+}
+
+.stat-card-label {
+  font-family: "DM Mono", monospace;
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.record-card .stat-card-label {
+  color: #ffb833;
+}
+
+.skull-stat-card .stat-card-label {
+  color: #c084fc;
+}
+
+.stat-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.stat-card-value {
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #f8fafc;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-unit {
+  font-size: 9px;
+  font-weight: 500;
+  color: #94a3b8;
+  font-family: "DM Mono", monospace;
+}
+
+.stat-card-sub {
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  color: #798fa9;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
