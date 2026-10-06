@@ -35,6 +35,7 @@ import {
   UserRound,
   Zap,
 } from "lucide-react";
+import { AdBanner } from "./components/AdBanner";
 
 type IconComponent = ComponentType<{
   size?: number;
@@ -3341,6 +3342,8 @@ export default function App() {
               </div>
               <span>{notice}</span>
             </div>
+            {/* Bloco de Anúncio Google AdSense */}
+            <AdBanner client="ca-pub-2586618844394153" />
           </aside>
         </div>
 
@@ -4123,12 +4126,31 @@ export default function App() {
                 />{" "}
                 para ensinar prompt engineering · Todos os direitos reservados
               </div>
+              <div className="help-legal-links">
+                <a
+                  href="/termos-de-uso.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-legal-link"
+                >
+                  Termos de Uso
+                </a>
+                <span>·</span>
+                <a
+                  href="/politica-de-privacidade.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-legal-link"
+                >
+                  Política de Privacidade
+                </a>
+              </div>
             </div>
           </section>
         </div>
       )}
       <footer className="footer">
-        <span>
+        <span className="footer-brand">
           Prompt Auction /{" "}
           <img
             className="footer-wordmark"
@@ -4136,8 +4158,27 @@ export default function App() {
             alt="TolazzAI"
           />
         </span>
-        <span>construído para aprender jogando</span>
-        <span>rodada local · seus dados ficam aqui</span>
+        <span className="footer-tagline">construído para aprender jogando</span>
+        <div className="footer-legal-links">
+          <a
+            href="/termos-de-uso.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer-legal-link"
+          >
+            Termos de Uso
+          </a>
+          <span className="footer-legal-sep">·</span>
+          <a
+            href="/politica-de-privacidade.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer-legal-link"
+          >
+            Política de Privacidade
+          </a>
+        </div>
+        <span className="footer-local-note">rodada local · seus dados ficam aqui</span>
       </footer>
     </div>
   );

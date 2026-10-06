@@ -1439,9 +1439,12 @@ button:focus-visible {
   margin: auto;
   padding: 0 32px 23px;
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
   color: #536783;
-  font-size: 8px;
+  font-size: 9px;
 }
 .footer span {
   display: inline-flex;
@@ -1455,8 +1458,42 @@ button:focus-visible {
   object-fit: contain;
   object-position: left center;
 }
-.footer span:nth-child(2) {
+.footer-tagline {
   color: #7b8fac;
+}
+.footer-legal-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.footer-legal-link {
+  color: #8aa0be;
+  text-decoration: none;
+  font-size: 9.5px;
+  font-family: "DM Mono", monospace;
+  letter-spacing: 0.02em;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+.footer-legal-link:hover {
+  color: #00e5ff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.footer-legal-sep {
+  color: #3b506b;
+  font-size: 10px;
+}
+.help-legal-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 10px;
+  color: #536783;
+}
+.help-legal-links .footer-legal-link {
+  font-size: 10px;
 }
 .info-backdrop {
   position: fixed;
@@ -2793,7 +2830,8 @@ button:focus-visible {
     display: grid;
     grid-template-columns: 1fr 1fr;
   }
-  .notice-bar {
+  .notice-bar,
+  .ad-banner-box {
     grid-column: 1 / -1;
   }
   .cpu-panel {
@@ -2915,12 +2953,18 @@ button:focus-visible {
     align-self: flex-start;
   }
   .footer {
-    padding: 0 13px 18px;
+    padding: 0 13px 20px;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
+    text-align: center;
+    align-items: center;
   }
-  .footer span:nth-child(2) {
+  .footer-tagline {
     order: -1;
+  }
+  .footer-legal-links {
+    margin: 4px 0;
+    gap: 12px;
   }
   .info-backdrop {
     padding: max(12px, env(safe-area-inset-top, 12px))
@@ -4720,3 +4764,169 @@ button:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ==========================================================================
+   GOOGLE ADSENSE - RETÂNGULO RESPONSIVO
+   ========================================================================== */
+.ad-banner-box {
+  width: 100%;
+  border-radius: 9px;
+  border: 1px solid rgba(202, 217, 243, 0.12);
+  background: rgba(7, 19, 33, 0.75);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ad-banner-box:hover {
+  border-color: rgba(202, 217, 243, 0.24);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.32);
+}
+
+.ad-banner-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(11, 26, 45, 0.55);
+  border-bottom: 1px solid rgba(202, 217, 243, 0.08);
+}
+
+.ad-banner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #7994b5;
+}
+
+.ad-badge-icon {
+  color: #ffb25e;
+}
+
+.ad-provider-tag {
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  color: #557091;
+  letter-spacing: 0.04em;
+}
+
+.ad-banner-content {
+  position: relative;
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.ad-banner-content ins.adsbygoogle {
+  position: relative;
+  z-index: 2;
+  width: 100% !important;
+  min-height: 250px;
+  display: block !important;
+}
+
+.ad-placeholder-layer {
+  position: absolute;
+  inset: 10px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+  border-radius: 6px;
+  background: linear-gradient(145deg, rgba(10, 24, 43, 0.65) 0%, rgba(6, 16, 29, 0.85) 100%);
+  border: 1px dashed rgba(202, 217, 243, 0.14);
+  pointer-events: none;
+}
+
+.ad-placeholder-glow {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.08) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.ad-placeholder-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.ad-placeholder-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  color: #00e5ff;
+  margin-bottom: 2px;
+}
+
+.ad-placeholder-title {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: -0.01em;
+}
+
+.ad-placeholder-desc {
+  margin: 0;
+  font-size: 11px;
+  color: #8fa6c2;
+  line-height: 1.35;
+}
+
+.ad-placeholder-id {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 3px 8px;
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  color: #6382a6;
+  background: rgba(4, 13, 24, 0.6);
+  border: 1px solid rgba(202, 217, 243, 0.1);
+  border-radius: 4px;
+}
+
+@media (max-width: 620px) {
+  .ad-banner-box {
+    margin-top: 4px;
+  }
+  .ad-banner-content {
+    min-height: 200px;
+    padding: 8px;
+  }
+  .ad-banner-content ins.adsbygoogle {
+    min-height: 200px;
+  }
+  .ad-placeholder-layer {
+    inset: 8px;
+    padding: 12px;
+  }
+}
+
